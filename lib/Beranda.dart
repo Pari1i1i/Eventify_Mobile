@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'detail.dart'; // Menghubungkan ke file detail.dart
+import 'admin/admin_login.dart';
 
 class Beranda extends StatefulWidget {
   const Beranda({super.key});
@@ -76,10 +77,55 @@ class _BerandaState extends State<Beranda> {
           ),
         ),
         actions: [
-          const CircleAvatar(
-            backgroundColor: Color(0xFF615983),
-            radius: 16,
-            child: Icon(Icons.person, color: Colors.white, size: 18),
+          // Tombol Masuk Admin Panel Neobrutalism di kanan atas
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminLoginPage()),
+              );
+            },
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 10),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFF176),
+                border: Border.all(color: const Color(0xFF2B2630), width: 2),
+                boxShadow: const [
+                  BoxShadow(color: Color(0xFF2B2630), offset: Offset(2, 2)),
+                ],
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.admin_panel_settings, size: 14, color: Color(0xFF2B2630)),
+                  SizedBox(width: 4),
+                  Text(
+                    'ADMIN',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF2B2630),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AdminLoginPage()),
+              );
+            },
+            child: const CircleAvatar(
+              backgroundColor: Color(0xFF615983),
+              radius: 16,
+              child: Icon(Icons.person, color: Colors.white, size: 18),
+            ),
           ),
           const SizedBox(width: 16),
         ],
