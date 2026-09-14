@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/neo_widgets.dart';
@@ -335,85 +334,35 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // QRIS Code display
-                  if (order.paymentMethod?.toUpperCase().contains('QRIS') ?? true) ...[
-                    Container(
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        border: Border.all(color: AppColors.textBorder, width: 2.5),
-                        boxShadow: const [
-                          BoxShadow(color: AppColors.textBorder, offset: Offset(3, 3)),
-                        ],
-                      ),
-                      child: QrImageView(
-                        data: order.qrCodeUrl ?? 'EVENTIFY-${order.orderCode}-${order.totalAmount}',
-                        version: QrVersions.auto,
-                        size: 200.0,
-                        eyeStyle: const QrEyeStyle(
-                          eyeShape: QrEyeShape.square,
-                          color: AppColors.textBorder,
-                        ),
-                        dataModuleStyle: const QrDataModuleStyle(
-                          dataModuleShape: QrDataModuleShape.square,
-                          color: AppColors.textBorder,
-                        ),
+                  // Official Static QRIS Display
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: AppColors.textBorder, width: 2.5),
+                      boxShadow: const [
+                        BoxShadow(color: AppColors.textBorder, offset: Offset(3, 3)),
+                      ],
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(4),
+                      child: Image.asset(
+                        'assets/images/qris_static.png',
+                        width: 260,
+                        fit: BoxFit.contain,
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Pindai QRIS menggunakan aplikasi E-Wallet atau Mobile Banking Anda',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.plusJakartaSans(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
-                      ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Pindai QRIS di atas menggunakan aplikasi E-Wallet (GoPay, OVO, Dana, ShopeePay) atau Mobile Banking Anda',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.plusJakartaSans(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
                     ),
-                  ] else ...[
-                    // Virtual Account Number Box
-                    Container(
-                      padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: AppColors.toska,
-                        border: Border.all(color: AppColors.textBorder, width: 2),
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            order.paymentMethod ?? 'VIRTUAL ACCOUNT',
-                            style: GoogleFonts.spaceGrotesk(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                              color: AppColors.textBorder,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                order.vaNumber ?? '880192837461928',
-                                style: GoogleFonts.spaceGrotesk(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.textBorder,
-                                ),
-                              ),
-                              const SizedBox(width: 8),
-                              IconButton(
-                                icon: const Icon(LucideIcons.copy, size: 18, color: AppColors.textBorder),
-                                onPressed: () => _copyToClipboard(
-                                  order.vaNumber ?? '880192837461928',
-                                  'Nomor Virtual Account',
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
                 ],
               ),
             ),

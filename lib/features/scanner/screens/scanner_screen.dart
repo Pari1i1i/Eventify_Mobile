@@ -6,6 +6,8 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/neo_widgets.dart';
+import '../../auth/providers/auth_provider.dart';
+import '../../organizer/providers/organizer_provider.dart';
 import '../models/scan_result_model.dart';
 import '../services/scanner_api_service.dart';
 
@@ -55,7 +57,33 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
     await _scannerController.stop();
 
     try {
+      final user = ref.read(authStateProvider).user;
+      final myEvents = ref.read(organizerProvider).events;
+
       final result = await ref.read(scannerApiServiceProvider).checkIn(code);
+
+      // Panitia Ownership Validation Check
+      if (user?.role.toLowerCase() == 'organizer') {
+        final isMyEvent = myEvents.any((e) =>
+            (result.eventId != null && result.eventId! > 0 && e.id == result.eventId) ||
+            (result.eventTitle != null && result.eventTitle!.isNotEmpty && e.title.toLowerCase().trim() == result.eventTitle!.toLowerCase().trim()));
+
+        if (!isMyEvent && myEvents.isNotEmpty) {
+          if (mounted) {
+            _showResultDialog(
+              ScanResultModel(
+                status: ScanStatus.invalid,
+                message: 'AKSES DITOLAK: Anda bukan panitia dari event "${result.eventTitle ?? 'ini'}"!',
+                ticketCode: code,
+                eventTitle: result.eventTitle,
+                attendeeName: result.attendeeName,
+              ),
+            );
+          }
+          return;
+        }
+      }
+
       if (mounted) {
         _showResultDialog(result);
       }
@@ -429,9 +457,6 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 border: Border.all(color: AppColors.yellow, width: 4),
-                boxShadow: const [
-                  BoxShadow(color: AppColors.textBorder, offset: Offset(4, 4), blurRadius: 0),
-                ],
               ),
               child: Stack(
                 children: [

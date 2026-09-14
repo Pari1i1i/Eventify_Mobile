@@ -36,10 +36,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _isLoading = false;
 
   final List<Map<String, String>> _paymentOptions = [
-    {'id': 'QRIS', 'name': 'QRIS (Gopay/OVO/ShopeePay/Dana)', 'desc': 'Scan instan QR code'},
-    {'id': 'BCA_VA', 'name': 'BCA Virtual Account', 'desc': 'Transfer otomatis 24 jam'},
-    {'id': 'MANDIRI_VA', 'name': 'Mandiri Virtual Account', 'desc': 'Transfer otomatis 24 jam'},
-    {'id': 'BRI_VA', 'name': 'BRI Virtual Account', 'desc': 'Transfer otomatis 24 jam'},
+    {'id': 'QRIS', 'name': 'QRIS (Gopay / OVO / Dana / ShopeePay / All Bank)', 'desc': 'Scan QRIS nasional resmi untuk semua aplikasi E-Wallet & M-Banking'},
   ];
 
   @override

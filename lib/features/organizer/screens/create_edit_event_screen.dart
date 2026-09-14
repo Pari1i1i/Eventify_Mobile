@@ -162,15 +162,26 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
     final endDateTime = _combineDateTime(_endDate, _endTime);
 
     final eventData = <String, dynamic>{
+      'name': _titleController.text.trim(),
       'title': _titleController.text.trim(),
       'category': _categoryController.text.trim(),
       'description': _descriptionController.text.trim(),
+      'location': _venueNameController.text.trim(),
       'venue_name': _venueNameController.text.trim(),
       'venue_address': _venueAddressController.text.trim(),
+      'address': _venueAddressController.text.trim(),
       'city': _cityController.text.trim(),
       'status': _status,
-      if (startDateTime != null) 'start_time': startDateTime.toIso8601String(),
-      if (endDateTime != null) 'end_time': endDateTime.toIso8601String(),
+      'terms_conditions': 'Tiket tidak dapat dikembalikan / Tiket berlaku untuk 1 orang.',
+      'ticket_tiers': <Map<String, dynamic>>[],
+      if (startDateTime != null) ...{
+        'start_at': startDateTime.toUtc().toIso8601String(),
+        'start_time': startDateTime.toUtc().toIso8601String(),
+      },
+      if (endDateTime != null) ...{
+        'end_at': endDateTime.toUtc().toIso8601String(),
+        'end_time': endDateTime.toUtc().toIso8601String(),
+      },
     };
 
     try {
@@ -180,12 +191,20 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
       if (widget.eventId != null) {
         savedEvent = await orgApi.updateEvent(widget.eventId!, eventData);
         if (_selectedBanner != null) {
-          await orgApi.uploadBanner(widget.eventId!, _selectedBanner!);
+          try {
+            await orgApi.uploadBanner(widget.eventId!, _selectedBanner!);
+          } catch (e) {
+            debugPrint('[Banner Upload Error] $e');
+          }
         }
       } else {
         savedEvent = await orgApi.createEvent(eventData);
-        if (_selectedBanner != null) {
-          await orgApi.uploadBanner(savedEvent.id, _selectedBanner!);
+        if (_selectedBanner != null && savedEvent.id > 0) {
+          try {
+            await orgApi.uploadBanner(savedEvent.id, _selectedBanner!);
+          } catch (e) {
+            debugPrint('[Banner Upload Error] $e');
+          }
         }
       }
 

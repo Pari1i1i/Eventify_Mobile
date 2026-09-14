@@ -11,6 +11,7 @@ class ScanResultModel {
   final String? attendeeName;
   final String? attendeeEmail;
   final String? eventTitle;
+  final int? eventId;
   final String? tierName;
   final DateTime? checkInTime;
 
@@ -21,6 +22,7 @@ class ScanResultModel {
     this.attendeeName,
     this.attendeeEmail,
     this.eventTitle,
+    this.eventId,
     this.tierName,
     this.checkInTime,
   });
@@ -46,6 +48,10 @@ class ScanResultModel {
             ? json['ticket'] as Map<String, dynamic>
             : json;
 
+    final parsedEventId = data['event_id'] is int
+        ? data['event_id'] as int
+        : int.tryParse(data['event_id']?.toString() ?? data['event']?['id']?.toString() ?? '0');
+
     return ScanResultModel(
       status: parsedStatus,
       message: msg.isNotEmpty ? msg : (parsedStatus == ScanStatus.success ? 'Check-in berhasil' : 'Kode tidak valid'),
@@ -53,6 +59,7 @@ class ScanResultModel {
       attendeeName: data['attendee_name']?.toString() ?? data['name']?.toString(),
       attendeeEmail: data['attendee_email']?.toString() ?? data['email']?.toString(),
       eventTitle: data['event_title']?.toString() ?? data['event']?['title']?.toString(),
+      eventId: parsedEventId != null && parsedEventId > 0 ? parsedEventId : null,
       tierName: data['tier_name']?.toString() ?? data['ticket_tier']?['name']?.toString(),
       checkInTime: data['checked_in_at'] != null ? DateTime.tryParse(data['checked_in_at'].toString()) : DateTime.now(),
     );
