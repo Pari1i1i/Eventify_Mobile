@@ -178,7 +178,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       final email = googleUser.email;
-      final name = googleUser.displayName ?? email.split('@').first;
+      final name = googleUser.displayName;
       const googlePass = 'GoogleAuth2026!Eventify';
 
       // 1. Try login with Google account
