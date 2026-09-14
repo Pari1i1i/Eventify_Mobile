@@ -56,7 +56,7 @@ class FunRunBannerPainter extends CustomPainter {
       ..shader = const LinearGradient(
         colors: [Color(0xFF1565C0), Color(0xFF1E88E5), Color(0xFF2575FC)],
       ).createShader(rect);
-    canvas.drawShadow(bluePath, Colors.black.withOpacity(0.4), 6, true);
+    canvas.drawShadow(bluePath, Colors.black.withValues(alpha: 0.4), 6, true);
     canvas.drawPath(bluePath, bluePaint);
 
     // Upper Top Left Badge: Infinity logo symbol
@@ -284,7 +284,7 @@ class TechExpoBannerPainter extends CustomPainter {
 
     // Glowing Circles
     final glowPaint = Paint()
-      ..color = const Color(0xFF38BDF8).withOpacity(0.2)
+      ..color = const Color(0xFF38BDF8).withValues(alpha: 0.2)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 20);
     canvas.drawCircle(Offset(size.width * 0.8, size.height * 0.3), 60, glowPaint);
 

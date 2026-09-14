@@ -34,7 +34,7 @@ class AdminDashboardScreen extends ConsumerWidget {
         color: AppColors.textBorder,
         backgroundColor: AppColors.yellow,
         onRefresh: () async {
-          ref.refresh(adminDashboardStatsProvider);
+          ref.invalidate(adminDashboardStatsProvider);
         },
         child: statsAsync.when(
           loading: () => const NeoLoadingIndicator(text: 'Memuat dashboard statistik...'),

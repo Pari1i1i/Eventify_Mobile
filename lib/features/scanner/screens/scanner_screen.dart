@@ -345,7 +345,7 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
         subtitleTag: 'SCANNER GATE',
         actions: [
           NeoIconButton(
-            icon: _isTorchOn ? LucideIcons.flashLight : LucideIcons.flashLightOff,
+            icon: _isTorchOn ? LucideIcons.flashlight : LucideIcons.flashlightOff,
             backgroundColor: _isTorchOn ? AppColors.yellow : Colors.white,
             size: 38,
             iconSize: 18,

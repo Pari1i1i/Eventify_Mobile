@@ -34,7 +34,8 @@ class Formatters {
       dt = DateTime.tryParse(dateTime);
     }
     if (dt == null) return dateTime.toString();
-    return DateFormat('d MMM yyyy, HH:mm', 'id_ID').format(dt.toLocal()) + ' WIB';
+    final formatted = DateFormat('d MMM yyyy, HH:mm', 'id_ID').format(dt.toLocal());
+    return '$formatted WIB';
   }
 
   static String formatTime(dynamic dateTime) {
@@ -46,7 +47,8 @@ class Formatters {
       dt = DateTime.tryParse(dateTime);
     }
     if (dt == null) return dateTime.toString();
-    return DateFormat('HH:mm', 'id_ID').format(dt.toLocal()) + ' WIB';
+    final formatted = DateFormat('HH:mm', 'id_ID').format(dt.toLocal());
+    return '$formatted WIB';
   }
 
   static bool isValidEmail(String email) {

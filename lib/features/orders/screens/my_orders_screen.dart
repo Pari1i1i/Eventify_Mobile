@@ -7,7 +7,6 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../../auth/providers/auth_provider.dart';
-import '../models/order_model.dart';
 import '../providers/orders_provider.dart';
 
 class MyOrdersScreen extends ConsumerStatefulWidget {
