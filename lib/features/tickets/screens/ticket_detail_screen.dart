@@ -7,6 +7,7 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../models/ticket_model.dart';
 import '../providers/tickets_provider.dart';
+import '../../events/providers/events_provider.dart';
 
 class TicketDetailScreen extends ConsumerWidget {
   final String ticketCode;
@@ -45,14 +46,22 @@ class TicketDetailScreen extends ConsumerWidget {
   }
 }
 
-class _TicketDetailView extends StatelessWidget {
+class _TicketDetailView extends ConsumerWidget {
   final TicketModel ticket;
 
   const _TicketDetailView({required this.ticket});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isValid = ticket.isValid;
+
+    final events = ref.watch(eventsProvider).events;
+    final matchedEvent = events.where((e) => (ticket.eventId > 0 && e.id == ticket.eventId) || (ticket.eventTitle != null && e.title.toLowerCase() == ticket.eventTitle!.toLowerCase())).firstOrNull;
+
+    final displayDate = ticket.eventDate ?? matchedEvent?.startTime;
+    final displayVenue = (ticket.venueName != null && ticket.venueName != 'Venue' && ticket.venueName!.isNotEmpty)
+        ? ticket.venueName!
+        : (matchedEvent?.venueName ?? 'Venue');
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -322,7 +331,7 @@ class _TicketDetailView extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    Formatters.formatDateTime(ticket.eventDate),
+                                    Formatters.formatDateTime(displayDate),
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,
@@ -346,7 +355,7 @@ class _TicketDetailView extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 2),
                                   Text(
-                                    ticket.venueName ?? 'Venue',
+                                    displayVenue,
                                     style: GoogleFonts.plusJakartaSans(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w700,

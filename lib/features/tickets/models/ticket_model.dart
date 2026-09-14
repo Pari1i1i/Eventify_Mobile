@@ -42,33 +42,85 @@ class TicketModel {
   bool get isCancelled => status.toLowerCase() == 'cancelled' || status.toLowerCase() == 'cancel';
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
+    final eventObj = json['event'] is Map<String, dynamic> 
+        ? json['event'] as Map<String, dynamic> 
+        : json['order'] is Map<String, dynamic> && (json['order'] as Map<String, dynamic>)['event'] is Map<String, dynamic>
+            ? (json['order'] as Map<String, dynamic>)['event'] as Map<String, dynamic>
+            : null;
+
     final code = json['code']?.toString() ?? json['ticket_code']?.toString() ?? '';
-    final eventTitle = json['event_name']?.toString() ?? json['event_title']?.toString() ?? json['event']?['title']?.toString() ?? json['event']?['name']?.toString() ?? 'Event Tiket';
-    final tierName = json['ticket_tier_name']?.toString() ?? json['tier_name']?.toString() ?? json['ticket_tier']?['name']?.toString() ?? 'Reguler';
-    final attendeeName = json['customer_name']?.toString() ?? json['attendee_name']?.toString() ?? 'Pengunjung';
+    final eventTitle = json['event_name']?.toString() ?? 
+        json['event_title']?.toString() ?? 
+        eventObj?['title']?.toString() ?? 
+        eventObj?['name']?.toString() ?? 
+        eventObj?['judul']?.toString() ?? 
+        'Event Tiket';
+
+    final tierName = json['ticket_tier_name']?.toString() ?? 
+        json['tier_name']?.toString() ?? 
+        json['ticket_tier']?['name']?.toString() ?? 
+        json['tier']?['name']?.toString() ?? 
+        'Reguler';
+
+    final attendeeName = json['customer_name']?.toString() ?? 
+        json['attendee_name']?.toString() ?? 
+        json['user_name']?.toString() ?? 
+        json['user']?['name']?.toString() ?? 
+        'Pengunjung';
+
+    final venueName = json['venue_name']?.toString() ?? 
+        json['location']?.toString() ?? 
+        json['venue']?.toString() ?? 
+        json['event_location']?.toString() ?? 
+        json['lokasi']?.toString() ?? 
+        eventObj?['location']?.toString() ?? 
+        eventObj?['venue_name']?.toString() ?? 
+        eventObj?['venue']?.toString() ?? 
+        eventObj?['lokasi']?.toString() ?? 
+        'Venue';
+
+    final venueAddress = json['venue_address']?.toString() ?? 
+        json['address']?.toString() ?? 
+        json['alamat']?.toString() ?? 
+        eventObj?['venue_address']?.toString() ?? 
+        eventObj?['address']?.toString() ?? 
+        eventObj?['alamat']?.toString();
+
+    final rawDate = json['event_date'] ??
+        json['start_at'] ??
+        json['start_time'] ??
+        json['event_start_at'] ??
+        json['event_start_time'] ??
+        json['date'] ??
+        json['waktu'] ??
+        eventObj?['start_at'] ??
+        eventObj?['start_time'] ??
+        eventObj?['event_date'] ??
+        eventObj?['date'] ??
+        eventObj?['waktu'];
+
+    final eventDate = rawDate != null ? DateTime.tryParse(rawDate.toString()) : null;
+
+    final eventId = json['event_id'] is int 
+        ? json['event_id'] 
+        : int.tryParse(json['event_id']?.toString() ?? eventObj?['id']?.toString() ?? '0') ?? 0;
 
     return TicketModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       ticketCode: code,
       orderId: json['order_id'] is int ? json['order_id'] : int.tryParse(json['order_id']?.toString() ?? '0') ?? 0,
-      eventId: json['event_id'] is int ? json['event_id'] : int.tryParse(json['event_id']?.toString() ?? '0') ?? 0,
+      eventId: eventId,
       tierId: json['tier_id'] is int
           ? json['tier_id']
           : json['ticket_tier_id'] is int
               ? json['ticket_tier_id']
               : int.tryParse(json['tier_id']?.toString() ?? json['ticket_tier_id']?.toString() ?? '0'),
       eventTitle: eventTitle,
-      eventBanner: json['event_banner']?.toString() ?? json['event']?['banner_url']?.toString(),
+      eventBanner: json['event_banner']?.toString() ?? eventObj?['banner_url']?.toString() ?? eventObj?['banner']?.toString(),
       tierName: tierName,
-      venueName: json['venue_name']?.toString() ?? json['location']?.toString() ?? json['event']?['location']?.toString() ?? json['event']?['venue_name']?.toString() ?? 'Venue',
-      venueAddress: json['venue_address']?.toString() ?? json['event']?['venue_address']?.toString(),
-      eventDate: json['event_date'] != null
-          ? DateTime.tryParse(json['event_date'].toString())
-          : json['start_at'] != null
-              ? DateTime.tryParse(json['start_at'].toString())
-              : json['event']?['start_time'] != null
-                  ? DateTime.tryParse(json['event']['start_time'].toString())
-                  : null,
+      venueName: venueName,
+      venueAddress: venueAddress,
+      eventDate: eventDate,
       attendeeName: attendeeName,
       attendeeEmail: json['attendee_email']?.toString() ?? json['customer_email']?.toString(),
       attendeePhone: json['attendee_phone']?.toString(),
