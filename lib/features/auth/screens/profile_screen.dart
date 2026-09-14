@@ -257,7 +257,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               const NeoFormLabel('BASE URL BACKEND REST API'),
               NeoTextField(
                 controller: serverController,
-                hint: 'http://10.0.2.2:8080/api/v1',
+                hint: 'http://139.190.96.203:8093/api/v1',
                 prefixIcon: const Icon(LucideIcons.globe, size: 18, color: AppColors.textBorder),
               ),
               const SizedBox(height: 10),
@@ -265,13 +265,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 spacing: 8,
                 children: [
                   NeoOutlineButton(
-                    text: 'Android (10.0.2.2:8080)',
+                    text: 'Cloud VPS (139.190.96.203)',
                     fontSize: 10,
                     height: 32,
-                    onPressed: () => serverController.text = 'http://10.0.2.2:8080/api/v1',
+                    onPressed: () => serverController.text = 'http://139.190.96.203:8093/api/v1',
                   ),
                   NeoOutlineButton(
-                    text: 'Localhost:8080',
+                    text: 'Localhost (8080)',
                     fontSize: 10,
                     height: 32,
                     onPressed: () => serverController.text = 'http://localhost:8080/api/v1',

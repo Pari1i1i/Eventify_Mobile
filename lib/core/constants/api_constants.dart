@@ -1,14 +1,6 @@
-import 'package:flutter/foundation.dart';
-
 class ApiConstants {
-  // Default Base URL for API
-  static String get defaultBaseUrl {
-    if (kIsWeb) {
-      return 'http://localhost:8080/api/v1';
-    }
-    // By default, localhost:8080 works on Android device with adb reverse and desktop
-    return 'http://localhost:8080/api/v1';
-  }
+  // Default Base URL for deployed API server
+  static const String defaultBaseUrl = 'http://139.190.96.203:8093/api/v1';
 
   // Active Base URL (stored in SharedPreferences if custom)
   static String baseUrl = defaultBaseUrl;

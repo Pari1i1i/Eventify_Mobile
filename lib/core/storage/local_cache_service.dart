@@ -18,7 +18,11 @@ class LocalCacheService {
   }
 
   String getBaseUrl() {
-    return _prefs.getString(ApiConstants.customBaseUrlKey) ?? ApiConstants.defaultBaseUrl;
+    final saved = _prefs.getString(ApiConstants.customBaseUrlKey);
+    if (saved == null || saved.isEmpty || saved.contains('localhost:8080') || saved.contains('10.0.2.2:8080')) {
+      return ApiConstants.defaultBaseUrl;
+    }
+    return saved;
   }
 
   // Save/Get User JSON
