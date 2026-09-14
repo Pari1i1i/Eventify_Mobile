@@ -10,7 +10,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/google_icon.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../providers/auth_provider.dart';
-import '../widgets/google_sign_in_modal.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -46,6 +45,19 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         context.go('/home');
       } else {
         final err = ref.read(authStateProvider).errorMessage ?? 'Gagal login';
+        showNeoSnackBar(context, err, isError: true);
+      }
+    }
+  }
+
+  void _handleGoogleSignIn() async {
+    final success = await ref.read(authStateProvider.notifier).triggerGoogleSignIn();
+    if (mounted && success) {
+      showNeoSnackBar(context, 'Login Google berhasil!', isSuccess: true);
+      context.go('/home');
+    } else if (mounted) {
+      final err = ref.read(authStateProvider).errorMessage;
+      if (err != null && err.isNotEmpty) {
         showNeoSnackBar(context, err, isError: true);
       }
     }
@@ -223,9 +235,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Google Sign In One-Tap Button
+                  // Google Sign In Native Button
                   GestureDetector(
-                    onTap: () => showGoogleSignInModal(context, ref),
+                    onTap: authState.isLoading ? null : _handleGoogleSignIn,
                     child: Container(
                       height: 48,
                       padding: const EdgeInsets.symmetric(horizontal: 16),

@@ -8,7 +8,6 @@ import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/google_icon.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../providers/auth_provider.dart';
-import '../widgets/google_sign_in_modal.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -50,6 +49,19 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         context.go('/home');
       } else {
         final err = ref.read(authStateProvider).errorMessage ?? 'Gagal mendaftar';
+        showNeoSnackBar(context, err, isError: true);
+      }
+    }
+  }
+
+  void _handleGoogleSignIn() async {
+    final success = await ref.read(authStateProvider.notifier).triggerGoogleSignIn();
+    if (mounted && success) {
+      showNeoSnackBar(context, 'Pendaftaran Google berhasil!', isSuccess: true);
+      context.go('/home');
+    } else if (mounted) {
+      final err = ref.read(authStateProvider).errorMessage;
+      if (err != null && err.isNotEmpty) {
         showNeoSnackBar(context, err, isError: true);
       }
     }
@@ -118,9 +130,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
                 const SizedBox(height: 16),
 
-                // Google Register One-Tap Button
+                // Google Register Native Button
                 GestureDetector(
-                  onTap: () => showGoogleSignInModal(context, ref),
+                  onTap: authState.isLoading ? null : _handleGoogleSignIn,
                   child: Container(
                     height: 48,
                     padding: const EdgeInsets.symmetric(horizontal: 16),

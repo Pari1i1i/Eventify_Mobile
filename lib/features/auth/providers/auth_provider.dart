@@ -4,6 +4,7 @@ import '../../../core/storage/local_cache_service.dart';
 import '../../../core/storage/secure_storage_service.dart';
 import '../models/user_model.dart';
 import '../services/auth_api_service.dart';
+import '../services/google_auth_service.dart';
 
 enum AuthStatus {
   initial,
@@ -46,14 +47,17 @@ class AuthState {
 
 class AuthNotifier extends StateNotifier<AuthState> {
   final AuthApiService _authApiService;
+  final GoogleAuthService _googleAuthService;
   final SecureStorageService _secureStorage;
   final LocalCacheService _localCache;
 
   AuthNotifier({
     required AuthApiService authApiService,
+    required GoogleAuthService googleAuthService,
     required SecureStorageService secureStorage,
     required LocalCacheService localCache,
   })  : _authApiService = authApiService,
+        _googleAuthService = googleAuthService,
         _secureStorage = secureStorage,
         _localCache = localCache,
         super(const AuthState());
@@ -162,20 +166,26 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<bool> loginWithGoogle({
-    required String email,
-    required String name,
-  }) async {
+  /// Triggers native Google Account pop-up on Android/iOS
+  Future<bool> triggerGoogleSignIn() async {
     state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
     try {
-      // Default google password representation for unified backend auth
-      const googleDefaultPass = 'GoogleAuth2026!Eventify';
+      final googleUser = await _googleAuthService.signIn();
+      if (googleUser == null) {
+        // User cancelled Google account picker dialog
+        state = state.copyWith(status: AuthStatus.unauthenticated);
+        return false;
+      }
 
-      // 1. Try login first
+      final email = googleUser.email;
+      final name = googleUser.displayName ?? email.split('@').first;
+      const googlePass = 'GoogleAuth2026!Eventify';
+
+      // 1. Try login with Google account
       try {
         final response = await _authApiService.login(
           email: email,
-          password: googleDefaultPass,
+          password: googlePass,
         );
 
         await _secureStorage.saveToken(response.token);
@@ -188,28 +198,28 @@ class AuthNotifier extends StateNotifier<AuthState> {
         );
         return true;
       } catch (_) {
-        // 2. If user not registered yet, register as customer automatically
-        final registerResponse = await _authApiService.register(
-          name: name.isNotEmpty ? name : email.split('@').first,
+        // 2. If not registered, register automatically as customer
+        final regResponse = await _authApiService.register(
+          name: name,
           email: email,
-          password: googleDefaultPass,
+          password: googlePass,
           role: 'customer',
         );
 
-        await _secureStorage.saveToken(registerResponse.token);
-        await _localCache.saveUserData(registerResponse.user.toJson());
+        await _secureStorage.saveToken(regResponse.token);
+        await _localCache.saveUserData(regResponse.user.toJson());
 
         state = AuthState(
           status: AuthStatus.authenticated,
-          user: registerResponse.user,
-          token: registerResponse.token,
+          user: regResponse.user,
+          token: regResponse.token,
         );
         return true;
       }
     } catch (e) {
       state = state.copyWith(
         status: AuthStatus.error,
-        errorMessage: e.toString(),
+        errorMessage: 'Gagal autentikasi Google: ${e.toString()}',
       );
       return false;
     }
@@ -266,17 +276,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
   Future<void> logout() async {
     await _secureStorage.deleteToken();
     await _localCache.clearUserData();
+    await _googleAuthService.signOut();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 }
 
 final authStateProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final authApiService = ref.watch(authApiServiceProvider);
+  final googleAuthService = ref.watch(googleAuthServiceProvider);
   final secureStorage = ref.watch(secureStorageProvider);
   final localCache = ref.watch(localCacheServiceProvider);
 
   final notifier = AuthNotifier(
     authApiService: authApiService,
+    googleAuthService: googleAuthService,
     secureStorage: secureStorage,
     localCache: localCache,
   );
