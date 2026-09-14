@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/event_banner_painters.dart';
 
 class DetailEventPage extends StatefulWidget {
   final Map<String, dynamic> eventData;
@@ -512,33 +513,4 @@ class _DetailEventPageState extends State<DetailEventPage> {
       ),
     );
   }
-}
-
-// PAINTER UNTUK HEADER PATTERN
-class DotPatternPainter extends CustomPainter {
-  final Color color;
-
-  DotPatternPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final bgPaint = Paint()..color = color;
-    canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
-
-    final dotPaint = Paint()
-      ..color = const Color(0xFF2B2630).withOpacity(0.3)
-      ..style = PaintingStyle.fill;
-
-    const double spacing = 12.0;
-    const double radius = 1.2;
-
-    for (double x = 6; x < size.width; x += spacing) {
-      for (double y = 6; y < size.height; y += spacing) {
-        canvas.drawCircle(Offset(x, y), radius, dotPaint);
-      }
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

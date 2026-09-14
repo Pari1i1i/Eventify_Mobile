@@ -14,6 +14,11 @@ class EventModel {
   final Color warnaHeader;
   final String? panitiaEmail; // null jika belum ada panitia ditugaskan
   final String? panitiaNama;
+  final String kategori;
+  final String harga;
+  final String bulan;
+  final String hari;
+  final String kodeTiket;
 
   EventModel({
     required this.id,
@@ -29,6 +34,11 @@ class EventModel {
     required this.warnaHeader,
     this.panitiaEmail,
     this.panitiaNama,
+    this.kategori = 'SPORTS EVENT',
+    this.harga = 'IDR 150.000',
+    this.bulan = 'OCT',
+    this.hari = '11',
+    this.kodeTiket = 'EVT-8F2026',
   });
 
   EventModel copyWith({
@@ -46,6 +56,11 @@ class EventModel {
     String? panitiaEmail,
     bool clearPanitia = false,
     String? panitiaNama,
+    String? kategori,
+    String? harga,
+    String? bulan,
+    String? hari,
+    String? kodeTiket,
   }) {
     return EventModel(
       id: id ?? this.id,
@@ -61,6 +76,11 @@ class EventModel {
       warnaHeader: warnaHeader ?? this.warnaHeader,
       panitiaEmail: clearPanitia ? null : (panitiaEmail ?? this.panitiaEmail),
       panitiaNama: clearPanitia ? null : (panitiaNama ?? this.panitiaNama),
+      kategori: kategori ?? this.kategori,
+      harga: harga ?? this.harga,
+      bulan: bulan ?? this.bulan,
+      hari: hari ?? this.hari,
+      kodeTiket: kodeTiket ?? this.kodeTiket,
     );
   }
 }

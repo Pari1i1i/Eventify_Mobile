@@ -211,7 +211,7 @@ class _AdminKelolaPanitiaPageState extends State<AdminKelolaPanitiaPage> {
                           ),
                           child: DropdownButtonFormField<String>(
                             key: ValueKey(_selectedEventId),
-                            initialValue: _selectedEventId,
+                            value: _selectedEventId,
                             isExpanded: true,
                             decoration: InputDecoration(
                               filled: true,

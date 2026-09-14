@@ -214,15 +214,37 @@ class AdminEventDetailPage extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                  color: AdminColors.mint,
-                  child: const Text(
-                    'TIKET ELEKTRONIK & PRESENSI QR',
-                    style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold),
-                  ),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 6,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      color: AdminColors.mint,
+                      child: const Text(
+                        'TIKET ELEKTRONIK & PRESENSI QR',
+                        style: TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AdminColors.textBorder),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      color: AdminColors.yellowHero,
+                      child: Text(
+                        'KODE TIKET: ${event.kodeTiket}',
+                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AdminColors.textBorder),
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      color: AdminColors.pink,
+                      child: Text(
+                        'KATEGORI: ${event.kategori}',
+                        style: const TextStyle(fontSize: 9, fontWeight: FontWeight.bold, color: AdminColors.textBorder),
+                      ),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 12),
                 Text(
                   event.judul,
                   style: const TextStyle(
@@ -251,26 +273,44 @@ class AdminEventDetailPage extends StatelessWidget {
                                 event.waktu,
                                 AdminColors.mint,
                               ),
+                              const SizedBox(height: 8),
+                              _buildBoxDetail(
+                                Icons.sell,
+                                'HARGA TIKET PESERTA',
+                                event.harga,
+                                AdminColors.pink,
+                              ),
                             ],
                           )
-                        : Row(
+                        : Column(
                             children: [
-                              Expanded(
-                                child: _buildBoxDetail(
-                                  Icons.calendar_month,
-                                  'TANGGAL PELAKSANAAN',
-                                  event.tanggal,
-                                  AdminColors.yellowLight,
-                                ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: _buildBoxDetail(
+                                      Icons.calendar_month,
+                                      'TANGGAL PELAKSANAAN',
+                                      event.tanggal,
+                                      AdminColors.yellowLight,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: _buildBoxDetail(
+                                      Icons.access_time_filled,
+                                      'WAKTU / JAM',
+                                      event.waktu,
+                                      AdminColors.mint,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: _buildBoxDetail(
-                                  Icons.access_time_filled,
-                                  'WAKTU / JAM',
-                                  event.waktu,
-                                  AdminColors.mint,
-                                ),
+                              const SizedBox(height: 8),
+                              _buildBoxDetail(
+                                Icons.sell,
+                                'HARGA TIKET PESERTA',
+                                event.harga,
+                                AdminColors.pink,
                               ),
                             ],
                           );
@@ -281,7 +321,7 @@ class AdminEventDetailPage extends StatelessWidget {
                   Icons.location_on,
                   'LOKASI / TEMPAT',
                   event.lokasi,
-                  AdminColors.pink,
+                  AdminColors.orange,
                 ),
                 const SizedBox(height: 20),
                 const Divider(color: AdminColors.textBorder, thickness: 1.5),
