@@ -7,8 +7,10 @@ import '../../../core/constants/api_constants.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/google_icon.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/google_sign_in_modal.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -219,7 +221,63 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
+
+                  // Google Sign In One-Tap Button
+                  GestureDetector(
+                    onTap: () => showGoogleSignInModal(context, ref),
+                    child: Container(
+                      height: 48,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        border: Border.all(color: AppColors.textBorder, width: 2.5),
+                        boxShadow: const [
+                          BoxShadow(color: AppColors.textBorder, offset: Offset(4, 4), blurRadius: 0),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const GoogleIcon(size: 20),
+                          const SizedBox(width: 10),
+                          Text(
+                            'MASUK DENGAN GOOGLE',
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textBorder,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Divider Or
+                  Row(
+                    children: [
+                      const Expanded(child: Divider(color: AppColors.textBorder, thickness: 1.5)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: Text(
+                          'ATAU LOGIN EMAIL',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textSecondary,
+                            letterSpacing: 0.8,
+                          ),
+                        ),
+                      ),
+                      const Expanded(child: Divider(color: AppColors.textBorder, thickness: 1.5)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 16),
 
                   // Login Form Card
                   NeoCard(

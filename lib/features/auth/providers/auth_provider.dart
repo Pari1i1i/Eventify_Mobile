@@ -162,6 +162,59 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  Future<bool> loginWithGoogle({
+    required String email,
+    required String name,
+  }) async {
+    state = state.copyWith(status: AuthStatus.loading, errorMessage: null);
+    try {
+      // Default google password representation for unified backend auth
+      const googleDefaultPass = 'GoogleAuth2026!Eventify';
+
+      // 1. Try login first
+      try {
+        final response = await _authApiService.login(
+          email: email,
+          password: googleDefaultPass,
+        );
+
+        await _secureStorage.saveToken(response.token);
+        await _localCache.saveUserData(response.user.toJson());
+
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          user: response.user,
+          token: response.token,
+        );
+        return true;
+      } catch (_) {
+        // 2. If user not registered yet, register as customer automatically
+        final registerResponse = await _authApiService.register(
+          name: name.isNotEmpty ? name : email.split('@').first,
+          email: email,
+          password: googleDefaultPass,
+          role: 'customer',
+        );
+
+        await _secureStorage.saveToken(registerResponse.token);
+        await _localCache.saveUserData(registerResponse.user.toJson());
+
+        state = AuthState(
+          status: AuthStatus.authenticated,
+          user: registerResponse.user,
+          token: registerResponse.token,
+        );
+        return true;
+      }
+    } catch (e) {
+      state = state.copyWith(
+        status: AuthStatus.error,
+        errorMessage: e.toString(),
+      );
+      return false;
+    }
+  }
+
   Future<bool> updateProfile({
     required String name,
     String? phone,

@@ -20,7 +20,7 @@ class _AdminDaftarPanitiaPageState extends State<AdminDaftarPanitiaPage> {
     return ListenableBuilder(
       listenable: dataService,
       builder: (context, _) {
-        final panitiaList = dataService.panitiaList;
+        final panitiaList = dataService.panitiaList;d
 
         return Scaffold(
           backgroundColor: AdminColors.background,

@@ -5,8 +5,10 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
+import '../../../core/widgets/google_icon.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../providers/auth_provider.dart';
+import '../widgets/google_sign_in_modal.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -21,7 +23,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  String _selectedRole = 'customer';
   bool _obscurePassword = true;
 
   @override
@@ -40,7 +41,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       name: _nameController.text,
       email: _emailController.text,
       password: _passwordController.text,
-      role: _selectedRole,
+      role: 'customer', // Default role for public registration is always customer / peserta
     );
 
     if (mounted) {
@@ -74,6 +75,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                // Header Banner
                 NeoCard(
                   backgroundColor: AppColors.teal,
                   child: Row(
@@ -92,7 +94,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'BUAT AKUN BARU',
+                              'DAFTAR AKUN PESERTA',
                               style: GoogleFonts.spaceGrotesk(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w900,
@@ -100,7 +102,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                               ),
                             ),
                             Text(
-                              'Pilih peran dan lengkapi data profil Anda',
+                              'Beli tiket, simpan e-tiket offline & check-in instan',
                               style: GoogleFonts.plusJakartaSans(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600,
@@ -113,83 +115,71 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     ],
                   ),
                 ),
+
                 const SizedBox(height: 16),
+
+                // Google Register One-Tap Button
+                GestureDetector(
+                  onTap: () => showGoogleSignInModal(context, ref),
+                  child: Container(
+                    height: 48,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      border: Border.all(color: AppColors.textBorder, width: 2.5),
+                      boxShadow: const [
+                        BoxShadow(color: AppColors.textBorder, offset: Offset(4, 4), blurRadius: 0),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const GoogleIcon(size: 20),
+                        const SizedBox(width: 10),
+                        Text(
+                          'DAFTAR DENGAN GOOGLE',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textBorder,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 16),
+
+                // Divider Or
+                Row(
+                  children: [
+                    const Expanded(child: Divider(color: AppColors.textBorder, thickness: 1.5)),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        'ATAU EMAIL MANUAL',
+                        style: GoogleFonts.spaceGrotesk(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.textSecondary,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    ),
+                    const Expanded(child: Divider(color: AppColors.textBorder, thickness: 1.5)),
+                  ],
+                ),
+
+                const SizedBox(height: 16),
+
+                // Form Inputs Card
                 NeoCard(
                   backgroundColor: Colors.white,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const NeoFormLabel('PERAN AKUN (ROLE)', isRequired: true),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _selectedRole = 'customer'),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: _selectedRole == 'customer' ? AppColors.yellow : Colors.white,
-                                  border: Border.all(color: AppColors.textBorder, width: 2),
-                                  boxShadow: _selectedRole == 'customer'
-                                      ? const [
-                                          BoxShadow(
-                                            color: AppColors.textBorder,
-                                            offset: Offset(2, 2),
-                                            blurRadius: 0,
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    'CUSTOMER',
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 12,
-                                      color: AppColors.textBorder,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: GestureDetector(
-                              onTap: () => setState(() => _selectedRole = 'organizer'),
-                              child: AnimatedContainer(
-                                duration: const Duration(milliseconds: 150),
-                                padding: const EdgeInsets.symmetric(vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: _selectedRole == 'organizer' ? AppColors.pink : Colors.white,
-                                  border: Border.all(color: AppColors.textBorder, width: 2),
-                                  boxShadow: _selectedRole == 'organizer'
-                                      ? const [
-                                          BoxShadow(
-                                            color: AppColors.textBorder,
-                                            offset: Offset(2, 2),
-                                            blurRadius: 0,
-                                          ),
-                                        ]
-                                      : null,
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    'PANITIA',
-                                    style: GoogleFonts.spaceGrotesk(
-                                      fontWeight: FontWeight.w900,
-                                      fontSize: 12,
-                                      color: AppColors.textBorder,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
                       const NeoFormLabel('NAMA LENGKAP', isRequired: true),
                       NeoTextField(
                         controller: _nameController,
@@ -263,7 +253,34 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           return null;
                         },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 14),
+
+                      // Information Badge for Organizer
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: AppColors.toska.withValues(alpha: 0.3),
+                          border: Border.all(color: AppColors.textBorder, width: 1.5),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(LucideIcons.info, size: 16, color: AppColors.textBorder),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                'Ingin jadi Panitia? Daftarkan akun Anda lalu hubungi Administrator via Web Portal untuk upgrade role.',
+                                style: GoogleFonts.plusJakartaSans(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.textBorder,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
                       NeoButton(
                         text: 'DAFTAR SEKARANG',
                         icon: LucideIcons.check,
