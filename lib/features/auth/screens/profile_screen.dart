@@ -561,33 +561,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     trailing: const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textBorder),
                     onTap: _showChangePasswordModal,
                   ),
-                  const Divider(color: AppColors.divider, thickness: 1.5),
-                  ListTile(
-                    leading: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppColors.blueLight,
-                        border: Border.all(color: AppColors.textBorder, width: 1.5),
-                      ),
-                      child: const Icon(LucideIcons.server, size: 18, color: AppColors.textBorder),
-                    ),
-                    title: Text(
-                      'Konfigurasi Server API',
-                      style: GoogleFonts.spaceGrotesk(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.textBorder,
-                      ),
-                    ),
-                    subtitle: Text(
-                      ApiConstants.baseUrl,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: GoogleFonts.plusJakartaSans(fontSize: 11, color: AppColors.textSecondary),
-                    ),
-                    trailing: const Icon(LucideIcons.chevronRight, size: 18, color: AppColors.textBorder),
-                    onTap: _showServerSettingsModal,
-                  ),
                 ],
               ),
             ),

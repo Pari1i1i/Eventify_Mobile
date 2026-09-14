@@ -402,7 +402,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
                     return Container(
                       margin: const EdgeInsets.only(bottom: 12),
                       decoration: BoxDecoration(
-                        color: qty > 0 ? AppColors.yellow.withValues(alpha: 0.2) : Colors.white,
+                        color: qty > 0 ? const Color(0xFFFFF9C4) : Colors.white,
                         border: Border.all(
                           color: qty > 0 ? AppColors.textBorder : AppColors.textBorder,
                           width: qty > 0 ? 3.0 : 2.0,
