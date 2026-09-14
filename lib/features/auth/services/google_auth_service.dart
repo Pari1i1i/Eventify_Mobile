@@ -23,12 +23,10 @@ class GoogleSignInResult {
 }
 
 class GoogleAuthService {
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: [
-      'email',
-      'profile',
-    ],
-  );
+ final GoogleSignIn _googleSignIn = GoogleSignIn(
+  serverClientId: '675097247409-7ep97s9t3f1ld1gikvnka6dkqmoujgqv.apps.googleusercontent.com',
+  scopes: ['email', 'profile'],
+);
 
   /// Triggers native Android/iOS Google Authentication Overlay
   Future<GoogleSignInResult?> signIn() async {
