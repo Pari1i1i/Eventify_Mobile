@@ -446,7 +446,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                             ),
                             const SizedBox(height: 6),
                             NeoBadge(
-                              label: user.role,
+                              label: user.isAdmin ? 'ADMINISTRATOR' : user.role.toUpperCase(),
                               backgroundColor: roleColor,
                               textColor: AppColors.textBorder,
                             ),
@@ -455,6 +455,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       ),
                     ],
                   ),
+                  if (user.isAdmin) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: AppColors.pink.withValues(alpha: 0.3),
+                        border: Border.all(color: AppColors.textBorder, width: 1.5),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(LucideIcons.shieldCheck, size: 18, color: AppColors.textBorder),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Akun Administrator terdeteksi. Manajemen user, verifikasi event & statistik lengkap dikelola melalui Eventify Web Portal (Desktop).',
+                              style: GoogleFonts.plusJakartaSans(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textBorder,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   if (user.phone != null && user.phone!.isNotEmpty) ...[
                     const SizedBox(height: 12),
                     const Divider(color: AppColors.textBorder, thickness: 1.5),

@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/admin/screens/admin_dashboard_screen.dart';
-import '../../features/admin/screens/admin_orders_screen.dart';
-import '../../features/admin/screens/admin_users_screen.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/profile_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -50,7 +47,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         builder: (context, state) => const RegisterScreen(),
       ),
 
-      // Main Shell Route with Dynamic Role Navigation
+      // Main Shell Route with Dynamic Role Navigation (Customer / Panitia)
       ShellRoute(
         navigatorKey: shellNavigatorKey,
         builder: (context, state, child) => MainShellNav(child: child),
@@ -78,10 +75,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/scanner',
             builder: (context, state) => const ScannerScreen(),
-          ),
-          GoRoute(
-            path: '/admin',
-            builder: (context, state) => const AdminDashboardScreen(),
           ),
         ],
       ),
@@ -169,18 +162,6 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             initialEvent: event,
           );
         },
-      ),
-
-      // Admin Management
-      GoRoute(
-        path: '/admin/users',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AdminUsersScreen(),
-      ),
-      GoRoute(
-        path: '/admin/orders',
-        parentNavigatorKey: rootNavigatorKey,
-        builder: (context, state) => const AdminOrdersScreen(),
       ),
     ],
   );

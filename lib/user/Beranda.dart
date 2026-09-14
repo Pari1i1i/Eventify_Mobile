@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../admin/admin_login.dart';
 import 'data/user_mock_data.dart';
 import 'widgets/user_event_card.dart';
 import 'widgets/user_hero_banner.dart';
@@ -116,26 +115,6 @@ class _BerandaState extends State<Beranda> {
                   _searchQuery = '';
                 }
               });
-            },
-          ),
-          IconButton(
-            tooltip: 'Admin Panel',
-            icon: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFF9EB1), // AdminColors.pink
-                border: Border.all(color: const Color(0xFF2B2630), width: 1.5),
-                boxShadow: const [
-                  BoxShadow(color: Color(0xFF2B2630), offset: Offset(2, 2)),
-                ],
-              ),
-              child: const Icon(Icons.admin_panel_settings_rounded, size: 18, color: Color(0xFF2B2630)),
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const AdminLoginPage()),
-              );
             },
           ),
           const SizedBox(width: 12),

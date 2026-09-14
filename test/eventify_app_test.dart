@@ -5,7 +5,6 @@ import 'package:eventify/features/events/models/event_model.dart';
 import 'package:eventify/features/orders/models/order_model.dart';
 import 'package:eventify/features/tickets/models/ticket_model.dart';
 import 'package:eventify/features/scanner/models/scan_result_model.dart';
-import 'package:eventify/features/admin/models/admin_stats_model.dart';
 
 void main() {
   group('Formatters Tests', () {
@@ -41,11 +40,11 @@ void main() {
     test('EventModel & TicketTierModel parsing', () {
       final json = {
         'id': 10,
-        'title': '8Finity Fun Run 2026',
+        'name': '8Finity Fun Run 2026',
         'slug': '8finity-fun-run-2026',
         'description': 'Charity Fun Run Event',
         'category': 'Olahraga & Lari',
-        'venue_name': 'Gelora Bung Karno',
+        'location': 'Gelora Bung Karno',
         'city': 'Jakarta',
         'ticket_tiers': [
           {
@@ -74,7 +73,7 @@ void main() {
         'user_id': 1,
         'event_id': 10,
         'total_amount': 300000,
-        'status': 'paid',
+        'payment_status': 'paid',
         'payment_method': 'QRIS',
       };
       final order = OrderModel.fromJson(json);
@@ -86,10 +85,10 @@ void main() {
     test('TicketModel parsing', () {
       final json = {
         'id': 101,
-        'ticket_code': 'EVT-RUN-001',
+        'code': 'EVT-RUN-001',
         'order_id': 55,
         'event_id': 10,
-        'attendee_name': 'Ahmad Fauzi',
+        'customer_name': 'Ahmad Fauzi',
         'status': 'valid',
       };
       final ticket = TicketModel.fromJson(json);
@@ -111,22 +110,6 @@ void main() {
       final scan = ScanResultModel.fromJson(json, 'EVT-RUN-001');
       expect(scan.isSuccess, true);
       expect(scan.attendeeName, 'Ahmad Fauzi');
-    });
-
-    test('AdminDashboardStats parsing', () {
-      final json = {
-        'data': {
-          'total_events': 12,
-          'total_orders': 450,
-          'total_tickets_sold': 1200,
-          'total_attendance': 950,
-          'total_revenue': 75000000,
-        },
-      };
-      final stats = AdminDashboardStats.fromJson(json);
-      expect(stats.totalEvents, 12);
-      expect(stats.totalRevenue, 75000000);
-      expect(stats.totalAttendance, 950);
     });
   });
 }

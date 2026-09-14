@@ -34,17 +34,9 @@ class MainShellNav extends ConsumerWidget {
     }
 
     final lower = role.toLowerCase();
-    if (lower == 'admin') {
-      return const [
-        ShellNavigationItem(label: 'Beranda', icon: LucideIcons.compass, route: '/home'),
-        ShellNavigationItem(label: 'Event Saya', icon: LucideIcons.calendarCheck, route: '/organizer/my-events'),
-        ShellNavigationItem(label: 'Scanner', icon: LucideIcons.scanLine, route: '/scanner'),
-        ShellNavigationItem(label: 'Admin', icon: LucideIcons.shieldCheck, route: '/admin'),
-        ShellNavigationItem(label: 'Profil', icon: LucideIcons.user, route: '/profile'),
-      ];
-    }
-
-    if (lower == 'organizer' || lower == 'panitia') {
+    // Organizer & Admin use the Organizer toolkit on mobile (Event Saya + Scanner + Tiket)
+    // Admin management (User roles, stats, config) is strictly handled in React Web
+    if (lower == 'organizer' || lower == 'panitia' || lower == 'admin') {
       return const [
         ShellNavigationItem(label: 'Beranda', icon: LucideIcons.compass, route: '/home'),
         ShellNavigationItem(label: 'Event Saya', icon: LucideIcons.calendarCheck, route: '/organizer/my-events'),
@@ -54,7 +46,7 @@ class MainShellNav extends ConsumerWidget {
       ];
     }
 
-    // Default Customer
+    // Default Customer / Peserta
     return const [
       ShellNavigationItem(label: 'Beranda', icon: LucideIcons.compass, route: '/home'),
       ShellNavigationItem(label: 'Tiket Saya', icon: LucideIcons.ticket, route: '/tickets'),
