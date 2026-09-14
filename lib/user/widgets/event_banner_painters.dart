@@ -320,7 +320,7 @@ class GenericBannerPainter extends CustomPainter {
     final Rect rect = Rect.fromLTWH(0, 0, size.width, size.height);
     final bgPaint = Paint()
       ..shader = LinearGradient(
-        colors: [bgColor, bgColor.withOpacity(0.7), const Color(0xFF1E293B)],
+        colors: [bgColor, bgColor.withValues(alpha: 0.7), const Color(0xFF1E293B)],
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
       ).createShader(rect);
@@ -358,7 +358,7 @@ class DotPatternPainter extends CustomPainter {
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), bgPaint);
 
     final dotPaint = Paint()
-      ..color = const Color(0xFF2B2630).withOpacity(0.3)
+      ..color = const Color(0xFF2B2630).withValues(alpha: 0.3)
       ..style = PaintingStyle.fill;
 
     const double spacing = 12.0;

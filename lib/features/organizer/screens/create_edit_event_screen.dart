@@ -102,12 +102,14 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
   }
 
   Future<void> _pickStartDate() async {
+    if (!mounted) return;
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: _startDate ?? DateTime.now(),
       firstDate: DateTime.now(),
       lastDate: DateTime(2030),
     );
+    if (!mounted) return;
     if (pickedDate != null) {
       final pickedTime = await showTimePicker(
         context: context,
@@ -123,12 +125,14 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
   }
 
   Future<void> _pickEndDate() async {
+    if (!mounted) return;
     final pickedDate = await showDatePicker(
       context: context,
       initialDate: _endDate ?? (_startDate ?? DateTime.now()),
       firstDate: DateTime.now(),
       lastDate: DateTime(2030),
     );
+    if (!mounted) return;
     if (pickedDate != null) {
       final pickedTime = await showTimePicker(
         context: context,
@@ -178,19 +182,22 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
         if (_selectedBanner != null) {
           await orgApi.uploadBanner(widget.eventId!, _selectedBanner!);
         }
-        showNeoSnackBar(context, 'Event berhasil diperbarui!', isSuccess: true);
       } else {
         savedEvent = await orgApi.createEvent(eventData);
         if (_selectedBanner != null) {
           await orgApi.uploadBanner(savedEvent.id, _selectedBanner!);
         }
-        showNeoSnackBar(context, 'Event berhasil dibuat!', isSuccess: true);
       }
 
       await ref.read(organizerProvider.notifier).loadMyEvents();
 
       if (mounted) {
         setState(() => _isLoading = false);
+        if (widget.eventId != null) {
+          showNeoSnackBar(context, 'Event berhasil diperbarui!', isSuccess: true);
+        } else {
+          showNeoSnackBar(context, 'Event berhasil dibuat!', isSuccess: true);
+        }
         if (widget.eventId == null) {
           // New event: ask to manage ticket tiers
           context.pushReplacement('/organizer/events/${savedEvent.id}/tiers', extra: savedEvent);

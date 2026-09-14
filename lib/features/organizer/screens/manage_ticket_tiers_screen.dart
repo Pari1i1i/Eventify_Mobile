@@ -164,24 +164,30 @@ class _ManageTicketTiersScreenState extends ConsumerState<ManageTicketTiersScree
                       final orgApi = ref.read(organizerApiServiceProvider);
                       if (isEditing) {
                         final updated = await orgApi.updateTicketTier(tierToEdit.id, tierData);
-                        setState(() {
-                          final idx = _tiers.indexWhere((t) => t.id == tierToEdit.id);
-                          if (idx >= 0) _tiers[idx] = updated;
-                          _isLoading = false;
-                        });
-                        showNeoSnackBar(context, 'Tier tiket berhasil diperbarui!', isSuccess: true);
+                        if (mounted) {
+                          setState(() {
+                            final idx = _tiers.indexWhere((t) => t.id == tierToEdit.id);
+                            if (idx >= 0) _tiers[idx] = updated;
+                            _isLoading = false;
+                          });
+                          showNeoSnackBar(context, 'Tier tiket berhasil diperbarui!', isSuccess: true);
+                        }
                       } else {
                         final created = await orgApi.createTicketTier(tierData);
-                        setState(() {
-                          _tiers.add(created);
-                          _isLoading = false;
-                        });
-                        showNeoSnackBar(context, 'Tier tiket berhasil ditambahkan!', isSuccess: true);
+                        if (mounted) {
+                          setState(() {
+                            _tiers.add(created);
+                            _isLoading = false;
+                          });
+                          showNeoSnackBar(context, 'Tier tiket berhasil ditambahkan!', isSuccess: true);
+                        }
                       }
                       ref.read(organizerProvider.notifier).loadMyEvents();
                     } catch (e) {
-                      setState(() => _isLoading = false);
-                      showNeoSnackBar(context, e.toString(), isError: true);
+                      if (mounted) {
+                        setState(() => _isLoading = false);
+                        showNeoSnackBar(context, e.toString(), isError: true);
+                      }
                     }
                   },
                 ),
@@ -223,15 +229,19 @@ class _ManageTicketTiersScreenState extends ConsumerState<ManageTicketTiersScree
               setState(() => _isLoading = true);
               try {
                 await ref.read(organizerApiServiceProvider).deleteTicketTier(tier.id);
-                setState(() {
-                  _tiers.removeWhere((t) => t.id == tier.id);
-                  _isLoading = false;
-                });
-                showNeoSnackBar(context, 'Tier berhasil dihapus', isSuccess: true);
+                if (mounted) {
+                  setState(() {
+                    _tiers.removeWhere((t) => t.id == tier.id);
+                    _isLoading = false;
+                  });
+                  showNeoSnackBar(context, 'Tier berhasil dihapus', isSuccess: true);
+                }
                 ref.read(organizerProvider.notifier).loadMyEvents();
               } catch (e) {
-                setState(() => _isLoading = false);
-                showNeoSnackBar(context, e.toString(), isError: true);
+                if (mounted) {
+                  setState(() => _isLoading = false);
+                  showNeoSnackBar(context, e.toString(), isError: true);
+                }
               }
             },
           ),

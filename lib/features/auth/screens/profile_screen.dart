@@ -95,6 +95,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     );
                     if (ctx.mounted) {
                       Navigator.pop(ctx);
+                    }
+                    if (mounted) {
                       if (success) {
                         showNeoSnackBar(context, 'Profil berhasil diperbarui!', isSuccess: true);
                       } else {
@@ -192,6 +194,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     );
                     if (ctx.mounted) {
                       Navigator.pop(ctx);
+                    }
+                    if (mounted) {
                       if (success) {
                         showNeoSnackBar(context, 'Kata sandi berhasil diubah!', isSuccess: true);
                       } else {
