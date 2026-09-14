@@ -92,7 +92,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         parentNavigatorKey: rootNavigatorKey,
         builder: (context, state) {
           final slug = state.pathParameters['slug'] ?? '';
-          return EventDetailScreen(slug: slug);
+          final event = state.extra as EventModel?;
+          return EventDetailScreen(slug: slug, initialEvent: event);
         },
       ),
 

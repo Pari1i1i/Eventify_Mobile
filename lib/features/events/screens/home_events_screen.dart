@@ -399,7 +399,7 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
                       return EventCard(
                         event: event,
                         onTap: () {
-                          context.push('/events/${event.slug}');
+                          context.push('/events/${event.slug}', extra: event);
                         },
                       );
                     },

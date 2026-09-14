@@ -15,8 +15,9 @@ import '../providers/events_provider.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
   final String slug;
+  final EventModel? initialEvent;
 
-  const EventDetailScreen({super.key, required this.slug});
+  const EventDetailScreen({super.key, required this.slug, this.initialEvent});
 
   @override
   ConsumerState<EventDetailScreen> createState() => _EventDetailScreenState();
@@ -124,43 +125,47 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final eventAsync = ref.watch(eventDetailProvider(widget.slug));
+    final event = eventAsync.valueOrNull ?? widget.initialEvent;
 
-    return eventAsync.when(
-      loading: () => const Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: NeoAppBar(title: 'EVENTIFY', subtitleTag: 'DETAIL EVENT', showBackButton: true),
-        body: NeoLoadingIndicator(text: 'Memuat informasi event...'),
-      ),
-      error: (err, _) => Scaffold(
+    if (event == null) {
+      if (eventAsync.isLoading) {
+        return const Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: NeoAppBar(title: 'EVENTIFY', subtitleTag: 'DETAIL EVENT', showBackButton: true),
+          body: NeoLoadingIndicator(text: 'Memuat informasi event...'),
+        );
+      }
+      return Scaffold(
         backgroundColor: AppColors.background,
         appBar: const NeoAppBar(title: 'EVENTIFY', subtitleTag: 'DETAIL EVENT', showBackButton: true),
         body: NeoErrorState(
-          message: err.toString(),
+          message: eventAsync.error?.toString() ?? 'Gagal memuat event',
           onRetry: () => ref.refresh(eventDetailProvider(widget.slug)),
         ),
-      ),
-      data: (event) {
-        final totalPrice = _calculateTotalPrice(event.ticketTiers);
-        final totalQty = _totalSelectedTickets;
+      );
+    }
 
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          appBar: NeoAppBar(
-            title: 'EVENTIFY',
-            subtitleTag: 'DETAIL EVENT',
-            showBackButton: true,
-            actions: [
-              NeoIconButton(
-                icon: LucideIcons.share2,
-                backgroundColor: AppColors.yellow,
-                size: 38,
-                iconSize: 18,
-                onPressed: () {
-                  showNeoSnackBar(context, 'Tautan event disalin ke clipboard!', isSuccess: true);
-                },
-              ),
-            ],
+    final totalPrice = _calculateTotalPrice(event.ticketTiers);
+    final totalQty = _totalSelectedTickets;
+
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: NeoAppBar(
+        title: 'EVENTIFY',
+        subtitleTag: 'DETAIL EVENT',
+        showBackButton: true,
+        actions: [
+          NeoIconButton(
+            icon: LucideIcons.share2,
+            backgroundColor: AppColors.yellow,
+            size: 38,
+            iconSize: 18,
+            onPressed: () {
+              showNeoSnackBar(context, 'Tautan event disalin ke clipboard!', isSuccess: true);
+            },
           ),
+        ],
+      ),
           body: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
             child: Column(
@@ -583,7 +588,5 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
             ),
           ),
         );
-      },
-    );
   }
 }

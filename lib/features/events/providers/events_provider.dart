@@ -157,5 +157,22 @@ final eventsProvider = StateNotifierProvider<EventsNotifier, EventsState>((ref) 
 
 final eventDetailProvider = FutureProvider.family<EventModel, String>((ref, slug) async {
   final apiService = ref.watch(eventApiServiceProvider);
-  return await apiService.getEventBySlug(slug);
+  try {
+    return await apiService.getEventBySlug(slug);
+  } catch (e) {
+    // If API fails or is offline, attempt to find the event in loaded list or cache
+    final localEvents = ref.read(eventsProvider).events;
+    final match = localEvents.where((ev) => ev.slug == slug || ev.id.toString() == slug).firstOrNull;
+    if (match != null) {
+      return match;
+    }
+    final cached = ref.read(localCacheServiceProvider).getCachedEvents();
+    for (var c in cached) {
+      final ev = EventModel.fromJson(c);
+      if (ev.slug == slug || ev.id.toString() == slug) {
+        return ev;
+      }
+    }
+    rethrow;
+  }
 });
