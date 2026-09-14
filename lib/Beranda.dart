@@ -12,7 +12,7 @@ class Beranda extends StatefulWidget {
 class _BerandaState extends State<Beranda> {
   final TextEditingController _kodeTiketController = TextEditingController();
   final TextEditingController _cariEventController = TextEditingController();
-
+   
   // Data katalog event
   final List<Map<String, dynamic>> listEvent = [
     {
