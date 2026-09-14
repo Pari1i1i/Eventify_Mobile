@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'core/constants/app_theme.dart';
 import 'core/network/dio_client.dart';
 import 'core/router/app_router.dart';
@@ -7,6 +8,9 @@ import 'core/storage/local_cache_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize date formatting locale
+  await initializeDateFormatting('id_ID', null);
 
   // Initialize SharedPreferences local cache service
   final localCacheService = await LocalCacheService.init();

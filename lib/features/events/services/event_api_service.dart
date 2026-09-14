@@ -43,8 +43,12 @@ class EventApiService {
     List<dynamic> items = [];
 
     if (responseData is Map<String, dynamic>) {
-      if (responseData['data'] is List) {
+      if (responseData['data'] is Map<String, dynamic> && responseData['data']['items'] is List) {
+        items = responseData['data']['items'] as List;
+      } else if (responseData['data'] is List) {
         items = responseData['data'] as List;
+      } else if (responseData['items'] is List) {
+        items = responseData['items'] as List;
       } else if (responseData['events'] is List) {
         items = responseData['events'] as List;
       }

@@ -22,11 +22,13 @@ class UserModel {
   bool get isAdmin => role.toLowerCase() == 'admin';
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final roleRaw = json['role_name']?.toString() ?? json['role']?.toString() ?? 'customer';
+
     return UserModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      name: json['name']?.toString() ?? '',
+      name: json['name']?.toString() ?? json['customer_name']?.toString() ?? '',
       email: json['email']?.toString() ?? '',
-      role: json['role']?.toString().toLowerCase() ?? 'customer',
+      role: roleRaw.toLowerCase(),
       phone: json['phone']?.toString(),
       avatarUrl: json['avatar_url']?.toString() ?? json['avatar']?.toString(),
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
@@ -39,6 +41,7 @@ class UserModel {
       'name': name,
       'email': email,
       'role': role,
+      'role_name': role,
       'phone': phone,
       'avatar_url': avatarUrl,
       'created_at': createdAt?.toIso8601String(),
@@ -76,9 +79,7 @@ class AuthResponse {
   });
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
-    // API responses may wrap in 'data' or have token directly
     final data = json['data'] is Map<String, dynamic> ? json['data'] : json;
-    
     final token = data['token']?.toString() ?? json['token']?.toString() ?? '';
     final userMap = (data['user'] is Map<String, dynamic>)
         ? data['user'] as Map<String, dynamic>

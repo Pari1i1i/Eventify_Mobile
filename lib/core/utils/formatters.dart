@@ -5,12 +5,16 @@ class Formatters {
     if (amount == null || amount == 0) {
       return 'Gratis';
     }
-    final formatter = NumberFormat.currency(
-      locale: 'id_ID',
-      symbol: 'Rp ',
-      decimalDigits: 0,
-    );
-    return formatter.format(amount);
+    try {
+      final formatter = NumberFormat.currency(
+        locale: 'id_ID',
+        symbol: 'Rp ',
+        decimalDigits: 0,
+      );
+      return formatter.format(amount);
+    } catch (_) {
+      return 'Rp ${amount.toStringAsFixed(0)}';
+    }
   }
 
   static String formatDate(dynamic dateTime) {
@@ -22,7 +26,11 @@ class Formatters {
       dt = DateTime.tryParse(dateTime);
     }
     if (dt == null) return dateTime.toString();
-    return DateFormat('d MMM yyyy', 'id_ID').format(dt.toLocal());
+    try {
+      return DateFormat('d MMM yyyy', 'id_ID').format(dt.toLocal());
+    } catch (_) {
+      return DateFormat('d MMM yyyy').format(dt.toLocal());
+    }
   }
 
   static String formatDateTime(dynamic dateTime) {
@@ -34,8 +42,13 @@ class Formatters {
       dt = DateTime.tryParse(dateTime);
     }
     if (dt == null) return dateTime.toString();
-    final formatted = DateFormat('d MMM yyyy, HH:mm', 'id_ID').format(dt.toLocal());
-    return '$formatted WIB';
+    try {
+      final formatted = DateFormat('d MMM yyyy, HH:mm', 'id_ID').format(dt.toLocal());
+      return '$formatted WIB';
+    } catch (_) {
+      final formatted = DateFormat('d MMM yyyy, HH:mm').format(dt.toLocal());
+      return '$formatted WIB';
+    }
   }
 
   static String formatTime(dynamic dateTime) {
@@ -47,8 +60,13 @@ class Formatters {
       dt = DateTime.tryParse(dateTime);
     }
     if (dt == null) return dateTime.toString();
-    final formatted = DateFormat('HH:mm', 'id_ID').format(dt.toLocal());
-    return '$formatted WIB';
+    try {
+      final formatted = DateFormat('HH:mm', 'id_ID').format(dt.toLocal());
+      return '$formatted WIB';
+    } catch (_) {
+      final formatted = DateFormat('HH:mm').format(dt.toLocal());
+      return '$formatted WIB';
+    }
   }
 
   static bool isValidEmail(String email) {

@@ -39,7 +39,9 @@ class AdminApiService {
     List<dynamic> items = [];
 
     if (responseData is Map<String, dynamic>) {
-      if (responseData['data'] is List) {
+      if (responseData['data'] is Map<String, dynamic> && responseData['data']['items'] is List) {
+        items = responseData['data']['items'] as List;
+      } else if (responseData['data'] is List) {
         items = responseData['data'] as List;
       } else if (responseData['users'] is List) {
         items = responseData['users'] as List;
@@ -86,7 +88,9 @@ class AdminApiService {
     List<dynamic> items = [];
 
     if (responseData is Map<String, dynamic>) {
-      if (responseData['data'] is List) {
+      if (responseData['data'] is Map<String, dynamic> && responseData['data']['items'] is List) {
+        items = responseData['data']['items'] as List;
+      } else if (responseData['data'] is List) {
         items = responseData['data'] as List;
       } else if (responseData['orders'] is List) {
         items = responseData['orders'] as List;

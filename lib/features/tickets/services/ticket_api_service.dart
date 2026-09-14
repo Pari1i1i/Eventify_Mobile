@@ -20,7 +20,9 @@ class TicketApiService {
     List<dynamic> items = [];
 
     if (responseData is Map<String, dynamic>) {
-      if (responseData['data'] is List) {
+      if (responseData['data'] is Map<String, dynamic> && responseData['data']['items'] is List) {
+        items = responseData['data']['items'] as List;
+      } else if (responseData['data'] is List) {
         items = responseData['data'] as List;
       } else if (responseData['tickets'] is List) {
         items = responseData['tickets'] as List;

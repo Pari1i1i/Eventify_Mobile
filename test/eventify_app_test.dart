@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:eventify/core/utils/formatters.dart';
 import 'package:eventify/features/auth/models/user_model.dart';
 import 'package:eventify/features/events/models/event_model.dart';
-import 'package:eventify/features/events/models/ticket_tier_model.dart';
 import 'package:eventify/features/orders/models/order_model.dart';
 import 'package:eventify/features/tickets/models/ticket_model.dart';
 import 'package:eventify/features/scanner/models/scan_result_model.dart';

@@ -18,7 +18,11 @@ class OrderItemModel {
   });
 
   factory OrderItemModel.fromJson(Map<String, dynamic> json) {
-    final price = json['price'] is num ? json['price'] : num.tryParse(json['price']?.toString() ?? '0') ?? 0;
+    final price = json['price'] is num
+        ? json['price']
+        : json['tier_price'] is num
+            ? json['tier_price']
+            : num.tryParse(json['price']?.toString() ?? json['tier_price']?.toString() ?? '0') ?? 0;
     final qty = json['quantity'] is int ? json['quantity'] : int.tryParse(json['quantity']?.toString() ?? '1') ?? 1;
     final sub = json['subtotal'] is num
         ? json['subtotal']
@@ -32,7 +36,7 @@ class OrderItemModel {
           : json['tier_id'] is int
               ? json['tier_id']
               : int.tryParse(json['ticket_tier_id']?.toString() ?? json['tier_id']?.toString() ?? '0') ?? 0,
-      tierName: json['tier_name']?.toString() ?? json['ticket_tier']?['name']?.toString() ?? 'Tiket',
+      tierName: json['tier_name']?.toString() ?? json['ticket_tier_name']?.toString() ?? json['ticket_tier']?['name']?.toString() ?? 'Tiket',
       price: price,
       quantity: qty,
       subtotal: sub,
@@ -85,9 +89,9 @@ class OrderModel {
     this.items = const [],
   });
 
-  bool get isPaid => status.toLowerCase() == 'paid';
+  bool get isPaid => status.toLowerCase() == 'paid' || status.toLowerCase() == 'success';
   bool get isPending => status.toLowerCase() == 'pending';
-  bool get isCancelled => status.toLowerCase() == 'cancelled';
+  bool get isCancelled => status.toLowerCase() == 'cancelled' || status.toLowerCase() == 'cancel';
   bool get isExpired => status.toLowerCase() == 'expired';
   bool get isFree => totalAmount == 0;
 
@@ -103,21 +107,29 @@ class OrderModel {
           .toList();
     }
 
+    final paymentDetails = json['payment_details'] is Map<String, dynamic> ? json['payment_details'] as Map<String, dynamic> : null;
+
+    final statusStr = json['payment_status']?.toString() ?? json['status']?.toString() ?? 'pending';
+    final paymentMethodStr = json['payment_method']?.toString() ?? paymentDetails?['payment_method']?.toString() ?? paymentDetails?['payment_type']?.toString();
+    final paymentUrlStr = json['payment_url']?.toString() ?? paymentDetails?['payment_url']?.toString() ?? paymentDetails?['snap_redirect_url']?.toString();
+    final qrCodeUrlStr = json['qr_code_url']?.toString() ?? paymentDetails?['qr_code_url']?.toString() ?? paymentDetails?['qris_url']?.toString();
+    final vaNumberStr = json['va_number']?.toString() ?? paymentDetails?['va_number']?.toString();
+
     return OrderModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       orderCode: json['order_code']?.toString() ?? json['code']?.toString() ?? json['id']?.toString() ?? '',
       userId: json['user_id'] is int ? json['user_id'] : int.tryParse(json['user_id']?.toString() ?? '0') ?? 0,
       eventId: json['event_id'] is int ? json['event_id'] : int.tryParse(json['event_id']?.toString() ?? '0') ?? 0,
-      eventTitle: json['event_title']?.toString() ?? json['event']?['title']?.toString(),
+      eventTitle: json['event_name']?.toString() ?? json['event_title']?.toString() ?? json['event']?['title']?.toString() ?? json['event']?['name']?.toString(),
       eventBanner: json['event_banner']?.toString() ?? json['event']?['banner_url']?.toString(),
       totalAmount: json['total_amount'] is num
           ? json['total_amount']
           : num.tryParse(json['total_amount']?.toString() ?? '0') ?? 0,
-      status: json['status']?.toString().toLowerCase() ?? 'pending',
-      paymentMethod: json['payment_method']?.toString(),
-      paymentUrl: json['payment_url']?.toString() ?? json['snap_redirect_url']?.toString(),
-      qrCodeUrl: json['qr_code_url']?.toString() ?? json['qris_url']?.toString(),
-      vaNumber: json['va_number']?.toString(),
+      status: statusStr.toLowerCase(),
+      paymentMethod: paymentMethodStr,
+      paymentUrl: paymentUrlStr,
+      qrCodeUrl: qrCodeUrlStr,
+      vaNumber: vaNumberStr,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
       items: orderItems,
     );
@@ -130,9 +142,11 @@ class OrderModel {
       'user_id': userId,
       'event_id': eventId,
       'event_title': eventTitle,
+      'event_name': eventTitle,
       'event_banner': eventBanner,
       'total_amount': totalAmount,
       'status': status,
+      'payment_status': status,
       'payment_method': paymentMethod,
       'payment_url': paymentUrl,
       'qr_code_url': qrCodeUrl,

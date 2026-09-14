@@ -61,25 +61,40 @@ class EventModel {
           .toList();
     }
 
+    final title = json['name']?.toString() ?? json['title']?.toString() ?? json['judul']?.toString() ?? 'Event Tanpa Judul';
+    final location = json['location']?.toString() ?? json['venue_name']?.toString() ?? json['lokasi']?.toString() ?? 'Venue';
+    final startAt = json['start_at'] != null
+        ? DateTime.tryParse(json['start_at'].toString())
+        : json['start_time'] != null
+            ? DateTime.tryParse(json['start_time'].toString())
+            : json['waktu'] != null
+                ? DateTime.tryParse(json['waktu'].toString())
+                : null;
+    final endAt = json['end_at'] != null
+        ? DateTime.tryParse(json['end_at'].toString())
+        : json['end_time'] != null
+            ? DateTime.tryParse(json['end_time'].toString())
+            : null;
+
     return EventModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      title: json['title']?.toString() ?? json['judul']?.toString() ?? 'Event Tanpa Judul',
+      title: title,
       slug: json['slug']?.toString() ?? json['id']?.toString() ?? '',
       description: json['description']?.toString() ?? json['deskripsi']?.toString() ?? '',
-      category: json['category']?.toString() ?? json['kategori']?.toString() ?? 'Umum',
-      bannerUrl: json['banner_url']?.toString() ?? json['banner']?.toString(),
-      venueName: json['venue_name']?.toString() ?? json['lokasi']?.toString() ?? json['venue']?.toString() ?? 'Venue',
+      category: json['category']?.toString() ?? json['kategori']?.toString() ?? 'Event',
+      bannerUrl: json['banner_url']?.toString() ?? json['banner_path']?.toString() ?? json['banner']?.toString(),
+      venueName: location,
       venueAddress: json['venue_address']?.toString() ?? json['alamat']?.toString(),
       city: json['city']?.toString() ?? json['kota']?.toString(),
-      startTime: json['start_time'] != null
-          ? DateTime.tryParse(json['start_time'].toString())
-          : json['waktu'] != null
-              ? DateTime.tryParse(json['waktu'].toString())
-              : null,
-      endTime: json['end_time'] != null ? DateTime.tryParse(json['end_time'].toString()) : null,
+      startTime: startAt,
+      endTime: endAt,
       status: json['status']?.toString() ?? 'published',
-      organizerId: json['organizer_id'] is int ? json['organizer_id'] : int.tryParse(json['organizer_id']?.toString() ?? '0'),
-      organizerName: json['organizer_name']?.toString() ?? json['organizer']?['name']?.toString(),
+      organizerId: json['created_by'] is int
+          ? json['created_by']
+          : json['organizer_id'] is int
+              ? json['organizer_id']
+              : int.tryParse(json['created_by']?.toString() ?? json['organizer_id']?.toString() ?? '0'),
+      organizerName: json['creator_name']?.toString() ?? json['organizer_name']?.toString() ?? json['organizer']?['name']?.toString(),
       ticketTiers: tiers,
       minPrice: json['min_price'] is num ? json['min_price'] : num.tryParse(json['min_price']?.toString() ?? '0'),
     );
@@ -88,19 +103,21 @@ class EventModel {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
+      'name': title,
       'title': title,
       'slug': slug,
       'description': description,
       'category': category,
       'banner_url': bannerUrl,
+      'location': venueName,
       'venue_name': venueName,
       'venue_address': venueAddress,
       'city': city,
-      'start_time': startTime?.toIso8601String(),
-      'end_time': endTime?.toIso8601String(),
+      'start_at': startTime?.toIso8601String(),
+      'end_at': endTime?.toIso8601String(),
       'status': status,
-      'organizer_id': organizerId,
-      'organizer_name': organizerName,
+      'created_by': organizerId,
+      'creator_name': organizerName,
       'ticket_tiers': ticketTiers.map((t) => t.toJson()).toList(),
       'min_price': minPrice,
     };
