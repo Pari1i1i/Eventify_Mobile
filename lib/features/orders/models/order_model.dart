@@ -122,10 +122,24 @@ class OrderModel {
         paymentDetails?['snap_redirect_url']?.toString();
     final qrCodeUrlStr = json['qr_code_url']?.toString() ??
         paymentDetails?['qr_code_url']?.toString() ??
-        paymentDetails?['qris_url']?.toString();
+        paymentDetails?['qr_code_image_url']?.toString() ??
+        json['qr_code_image_url']?.toString() ??
+        paymentDetails?['qris_url']?.toString() ??
+        paymentDetails?['qr_string']?.toString() ??
+        json['qr_string']?.toString();
     final vaNumberStr = json['va_number']?.toString() ?? paymentDetails?['va_number']?.toString();
-    final simulationKeyStr = json['simulation_key']?.toString() ??
+    final orderCodeVal = json['order_code']?.toString() ?? json['code']?.toString() ?? json['id']?.toString() ?? '';
+
+    String? rawSimulationKey = json['simulation_key']?.toString() ??
         paymentDetails?['simulation_key']?.toString();
+
+    // Ignore simulation_key if it's accidentally populated with order_code
+    if (rawSimulationKey != null &&
+        (rawSimulationKey == orderCodeVal || rawSimulationKey.startsWith('ORD-'))) {
+      rawSimulationKey = null;
+    }
+
+    final simulationKeyStr = rawSimulationKey ?? qrCodeUrlStr;
 
     final totalAmountVal = json['total_amount'] is num
         ? json['total_amount'] as num
@@ -141,7 +155,7 @@ class OrderModel {
 
     return OrderModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
-      orderCode: json['order_code']?.toString() ?? json['code']?.toString() ?? json['id']?.toString() ?? '',
+      orderCode: orderCodeVal,
       userId: json['user_id'] is int ? json['user_id'] : int.tryParse(json['user_id']?.toString() ?? '0') ?? 0,
       eventId: json['event_id'] is int ? json['event_id'] : int.tryParse(json['event_id']?.toString() ?? '0') ?? 0,
       eventTitle: json['event_name']?.toString() ?? json['event_title']?.toString() ?? json['event']?['title']?.toString() ?? json['event']?['name']?.toString(),
@@ -159,6 +173,19 @@ class OrderModel {
   }
 
   OrderModel mergeWith(OrderModel other) {
+    String? resolvedSimKey;
+    if (other.simulationKey != null &&
+        !other.simulationKey!.startsWith('ORD-') &&
+        other.simulationKey != other.orderCode) {
+      resolvedSimKey = other.simulationKey;
+    } else if (simulationKey != null &&
+        !simulationKey!.startsWith('ORD-') &&
+        simulationKey != orderCode) {
+      resolvedSimKey = simulationKey;
+    } else {
+      resolvedSimKey = other.qrCodeUrl ?? qrCodeUrl;
+    }
+
     return OrderModel(
       id: other.id != 0 ? other.id : id,
       orderCode: other.orderCode.isNotEmpty ? other.orderCode : orderCode,
@@ -172,7 +199,7 @@ class OrderModel {
       paymentUrl: other.paymentUrl ?? paymentUrl,
       qrCodeUrl: other.qrCodeUrl ?? qrCodeUrl,
       vaNumber: other.vaNumber ?? vaNumber,
-      simulationKey: other.simulationKey ?? simulationKey,
+      simulationKey: resolvedSimKey,
       createdAt: other.createdAt ?? createdAt,
       items: other.items.isNotEmpty ? other.items : items,
     );

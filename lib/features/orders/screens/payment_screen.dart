@@ -382,8 +382,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   ),
 
                   // Simulation Key for Sandbox testing if available
-                  if (order.simulationKey != null && order.simulationKey!.isNotEmpty)
-                    _buildSimulationKeyCard(order.simulationKey!),
+                  if (_getSimulatorKey(order) != null)
+                    _buildSimulationKeyCard(_getSimulatorKey(order)!),
                 ],
               ),
             ),
@@ -474,6 +474,19 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     );
   }
 
+  String? _getSimulatorKey(OrderModel order) {
+    if (order.simulationKey != null &&
+        order.simulationKey!.isNotEmpty &&
+        !order.simulationKey!.startsWith('ORD-') &&
+        order.simulationKey != order.orderCode) {
+      return order.simulationKey;
+    }
+    if (order.qrCodeUrl != null && order.qrCodeUrl!.isNotEmpty) {
+      return order.qrCodeUrl;
+    }
+    return null;
+  }
+
   Widget _buildSimulationKeyCard(String simulationKey) {
     return Container(
       margin: const EdgeInsets.only(top: 14),
@@ -493,7 +506,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               const Icon(LucideIcons.terminal, size: 14, color: AppColors.textBorder),
               const SizedBox(width: 6),
               Text(
-                'SIMULATION KEY (SANDBOX)',
+                'SIMULATOR KEY (SANDBOX)',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -527,14 +540,15 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   child: SelectableText(
                     simulationKey,
                     style: GoogleFonts.spaceGrotesk(
-                      fontSize: 12,
+                      fontSize: 11,
                       fontWeight: FontWeight.w800,
                       color: AppColors.textBorder,
                     ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: () => _copyToClipboard(simulationKey, 'Simulation Key'),
+                  onTap: () => _copyToClipboard(simulationKey, 'Simulator Key / URL QR'),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -563,10 +577,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Gunakan simulation key ini pada simulator Midtrans QRIS untuk simulasi pembayaran sandbox.',
+            'Salin dan tempel link ini ke Midtrans Simulator (simulator.sandbox.midtrans.com/qris/index) lalu klik "Pay".',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 10,
-              fontWeight: FontWeight.w500,
+              fontWeight: FontWeight.w600,
               color: AppColors.textSecondary,
             ),
           ),
