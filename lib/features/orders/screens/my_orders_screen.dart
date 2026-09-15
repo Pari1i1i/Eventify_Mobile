@@ -28,11 +28,15 @@ class _MyOrdersScreenState extends ConsumerState<MyOrdersScreen> {
   Color _getStatusColor(String status) {
     switch (status.toLowerCase()) {
       case 'paid':
+      case 'success':
+      case 'settlement':
+      case 'settled':
         return AppColors.mint;
       case 'pending':
         return AppColors.orange;
       case 'cancelled':
       case 'expired':
+      case 'deny':
         return AppColors.pink;
       default:
         return AppColors.yellow;

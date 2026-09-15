@@ -68,6 +68,7 @@ class OrderModel {
   final String? paymentMethod;
   final String? paymentUrl;
   final String? qrCodeUrl;
+  final String? qrString;
   final String? vaNumber;
   final String? simulationKey;
   final DateTime? createdAt;
@@ -85,15 +86,27 @@ class OrderModel {
     this.paymentMethod,
     this.paymentUrl,
     this.qrCodeUrl,
+    this.qrString,
     this.vaNumber,
     this.simulationKey,
     this.createdAt,
     this.items = const [],
   });
 
-  bool get isPaid => status.toLowerCase() == 'paid' || status.toLowerCase() == 'success';
-  bool get isPending => status.toLowerCase() == 'pending';
-  bool get isCancelled => status.toLowerCase() == 'cancelled' || status.toLowerCase() == 'cancel';
+  bool get isPaid =>
+      status.toLowerCase() == 'paid' ||
+      status.toLowerCase() == 'success' ||
+      status.toLowerCase() == 'settlement' ||
+      status.toLowerCase() == 'settled' ||
+      status.toLowerCase() == 'capture';
+  bool get isPending =>
+      status.toLowerCase() == 'pending' ||
+      status.toLowerCase() == 'authorize';
+  bool get isCancelled =>
+      status.toLowerCase() == 'cancelled' ||
+      status.toLowerCase() == 'cancel' ||
+      status.toLowerCase() == 'deny' ||
+      status.toLowerCase() == 'failed';
   bool get isExpired => status.toLowerCase() == 'expired';
   bool get isFree => totalAmount == 0;
 
@@ -113,33 +126,83 @@ class OrderModel {
         ? Map<String, dynamic>.from(json['payment_details'] as Map)
         : null;
 
-    final statusStr = json['payment_status']?.toString() ?? json['status']?.toString() ?? 'pending';
+    final statusStr = json['payment_status']?.toString() ??
+        paymentDetails?['payment_status']?.toString() ??
+        paymentDetails?['transaction_status']?.toString() ??
+        json['transaction_status']?.toString() ??
+        json['status']?.toString() ??
+        'pending';
     final paymentMethodStr = json['payment_method']?.toString() ??
         paymentDetails?['payment_method']?.toString() ??
         paymentDetails?['payment_type']?.toString();
     final paymentUrlStr = json['payment_url']?.toString() ??
         paymentDetails?['payment_url']?.toString() ??
         paymentDetails?['snap_redirect_url']?.toString();
-    final qrCodeUrlStr = json['qr_code_url']?.toString() ??
-        paymentDetails?['qr_code_url']?.toString() ??
-        paymentDetails?['qr_code_image_url']?.toString() ??
-        json['qr_code_image_url']?.toString() ??
-        paymentDetails?['qris_url']?.toString() ??
-        paymentDetails?['qr_string']?.toString() ??
-        json['qr_string']?.toString();
+
+    // 1. Search for actual HTTP URL for QR Image
+    String? qrCodeUrlStr;
+    final possibleUrls = [
+      json['qr_code_url'],
+      paymentDetails?['qr_code_url'],
+      paymentDetails?['qr_code_image_url'],
+      json['qr_code_image_url'],
+      paymentDetails?['qris_url'],
+      json['qris_url'],
+      json['simulation_key'],
+      paymentDetails?['simulation_key'],
+    ];
+    for (final u in possibleUrls) {
+      if (u != null) {
+        final s = u.toString().trim();
+        if (s.startsWith('http://') || s.startsWith('https://')) {
+          qrCodeUrlStr = s;
+          break;
+        }
+      }
+    }
+
+    // 2. Search for raw EMVCo QR String (000201...)
+    String? qrStringVal;
+    final possibleStrings = [
+      json['qr_string'],
+      paymentDetails?['qr_string'],
+      paymentDetails?['qr_code'],
+      json['qr_code'],
+      json['simulation_key'],
+      paymentDetails?['simulation_key'],
+      json['qr_code_url'],
+      paymentDetails?['qr_code_url'],
+    ];
+    for (final q in possibleStrings) {
+      if (q != null) {
+        final s = q.toString().trim();
+        if (s.startsWith('000201')) {
+          qrStringVal = s;
+          break;
+        }
+      }
+    }
+
+    // Fallback if qrCodeUrlStr is still null
+    qrCodeUrlStr ??= json['qr_code_url']?.toString() ?? paymentDetails?['qr_code_url']?.toString();
+
     final vaNumberStr = json['va_number']?.toString() ?? paymentDetails?['va_number']?.toString();
     final orderCodeVal = json['order_code']?.toString() ?? json['code']?.toString() ?? json['id']?.toString() ?? '';
 
-    String? rawSimulationKey = json['simulation_key']?.toString() ??
-        paymentDetails?['simulation_key']?.toString();
-
-    // Ignore simulation_key if it's accidentally populated with order_code
-    if (rawSimulationKey != null &&
-        (rawSimulationKey == orderCodeVal || rawSimulationKey.startsWith('ORD-'))) {
-      rawSimulationKey = null;
+    // 3. Resolve simulation_key for Midtrans Simulator
+    // CRITICAL: Midtrans Simulator form ONLY accepts the HTTP image URL (https://api.sandbox.midtrans.com/v2/qris/.../qr-code).
+    // If an HTTP URL is found anywhere, that MUST be the simulation_key to prevent "unparsable" error in the simulator!
+    String? simulationKeyStr;
+    if (qrCodeUrlStr != null && (qrCodeUrlStr.startsWith('http://') || qrCodeUrlStr.startsWith('https://'))) {
+      simulationKeyStr = qrCodeUrlStr;
+    } else {
+      final rawKey = json['simulation_key']?.toString() ?? paymentDetails?['simulation_key']?.toString();
+      if (rawKey != null && !rawKey.startsWith('ORD-') && rawKey != orderCodeVal) {
+        simulationKeyStr = rawKey;
+      } else {
+        simulationKeyStr = qrCodeUrlStr ?? qrStringVal;
+      }
     }
-
-    final simulationKeyStr = rawSimulationKey ?? qrCodeUrlStr;
 
     final totalAmountVal = json['total_amount'] is num
         ? json['total_amount'] as num
@@ -165,6 +228,7 @@ class OrderModel {
       paymentMethod: paymentMethodStr,
       paymentUrl: paymentUrlStr,
       qrCodeUrl: qrCodeUrlStr,
+      qrString: qrStringVal,
       vaNumber: vaNumberStr,
       simulationKey: simulationKeyStr,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
@@ -174,16 +238,18 @@ class OrderModel {
 
   OrderModel mergeWith(OrderModel other) {
     String? resolvedSimKey;
-    if (other.simulationKey != null &&
-        !other.simulationKey!.startsWith('ORD-') &&
-        other.simulationKey != other.orderCode) {
-      resolvedSimKey = other.simulationKey;
-    } else if (simulationKey != null &&
-        !simulationKey!.startsWith('ORD-') &&
-        simulationKey != orderCode) {
-      resolvedSimKey = simulationKey;
+    final otherSim = other.simulationKey;
+    final thisSim = simulationKey;
+    if (otherSim != null && (otherSim.startsWith('http://') || otherSim.startsWith('https://'))) {
+      resolvedSimKey = otherSim;
+    } else if (thisSim != null && (thisSim.startsWith('http://') || thisSim.startsWith('https://'))) {
+      resolvedSimKey = thisSim;
+    } else if (other.qrCodeUrl != null && (other.qrCodeUrl!.startsWith('http://') || other.qrCodeUrl!.startsWith('https://'))) {
+      resolvedSimKey = other.qrCodeUrl;
+    } else if (qrCodeUrl != null && (qrCodeUrl!.startsWith('http://') || qrCodeUrl!.startsWith('https://'))) {
+      resolvedSimKey = qrCodeUrl;
     } else {
-      resolvedSimKey = other.qrCodeUrl ?? qrCodeUrl;
+      resolvedSimKey = otherSim ?? thisSim ?? other.qrCodeUrl ?? qrCodeUrl ?? other.qrString ?? qrString;
     }
 
     return OrderModel(
@@ -198,6 +264,7 @@ class OrderModel {
       paymentMethod: other.paymentMethod ?? paymentMethod,
       paymentUrl: other.paymentUrl ?? paymentUrl,
       qrCodeUrl: other.qrCodeUrl ?? qrCodeUrl,
+      qrString: other.qrString ?? qrString,
       vaNumber: other.vaNumber ?? vaNumber,
       simulationKey: resolvedSimKey,
       createdAt: other.createdAt ?? createdAt,
@@ -217,6 +284,7 @@ class OrderModel {
     String? paymentMethod,
     String? paymentUrl,
     String? qrCodeUrl,
+    String? qrString,
     String? vaNumber,
     String? simulationKey,
     DateTime? createdAt,
@@ -234,6 +302,7 @@ class OrderModel {
       paymentMethod: paymentMethod ?? this.paymentMethod,
       paymentUrl: paymentUrl ?? this.paymentUrl,
       qrCodeUrl: qrCodeUrl ?? this.qrCodeUrl,
+      qrString: qrString ?? this.qrString,
       vaNumber: vaNumber ?? this.vaNumber,
       simulationKey: simulationKey ?? this.simulationKey,
       createdAt: createdAt ?? this.createdAt,
@@ -256,6 +325,7 @@ class OrderModel {
       'payment_method': paymentMethod,
       'payment_url': paymentUrl,
       'qr_code_url': qrCodeUrl,
+      'qr_string': qrString,
       'va_number': vaNumber,
       'simulation_key': simulationKey,
       'created_at': createdAt?.toIso8601String(),

@@ -65,9 +65,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           _pollingTimer?.cancel();
         }
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted && !silent) {
         setState(() => _isLoading = false);
+        showNeoSnackBar(context, 'Gagal cek status: $e', isError: true);
       }
     }
   }
@@ -413,9 +414,25 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
   Widget _buildQrDisplay(OrderModel order) {
     final qrUrl = order.qrCodeUrl;
+    final qrString = order.qrString;
 
     Widget qrWidget;
-    if (qrUrl != null && qrUrl.isNotEmpty) {
+    // Prefer native vector generation if raw QR string exists
+    if (qrString != null && qrString.isNotEmpty) {
+      qrWidget = QrImageView(
+        data: qrString,
+        version: QrVersions.auto,
+        size: 240.0,
+        eyeStyle: const QrEyeStyle(
+          eyeShape: QrEyeShape.square,
+          color: AppColors.textBorder,
+        ),
+        dataModuleStyle: const QrDataModuleStyle(
+          dataModuleShape: QrDataModuleShape.square,
+          color: AppColors.textBorder,
+        ),
+      );
+    } else if (qrUrl != null && qrUrl.isNotEmpty) {
       if (qrUrl.startsWith('http://') || qrUrl.startsWith('https://')) {
         qrWidget = CachedNetworkImage(
           imageUrl: qrUrl,
@@ -475,19 +492,37 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
   }
 
   String? _getSimulatorKey(OrderModel order) {
+    // 1. First priority: HTTP URL (Midtrans simulator textbox ONLY accepts URL)
+    if (order.qrCodeUrl != null &&
+        (order.qrCodeUrl!.startsWith('http://') || order.qrCodeUrl!.startsWith('https://'))) {
+      return order.qrCodeUrl;
+    }
+    if (order.simulationKey != null &&
+        (order.simulationKey!.startsWith('http://') || order.simulationKey!.startsWith('https://'))) {
+      return order.simulationKey;
+    }
+
+    // 2. Second priority: raw valid simulation_key that is not order_code
     if (order.simulationKey != null &&
         order.simulationKey!.isNotEmpty &&
         !order.simulationKey!.startsWith('ORD-') &&
         order.simulationKey != order.orderCode) {
       return order.simulationKey;
     }
+
+    // 3. Fallbacks
     if (order.qrCodeUrl != null && order.qrCodeUrl!.isNotEmpty) {
       return order.qrCodeUrl;
+    }
+    if (order.qrString != null && order.qrString!.isNotEmpty) {
+      return order.qrString;
     }
     return null;
   }
 
   Widget _buildSimulationKeyCard(String simulationKey) {
+    final isHttpUrl = simulationKey.startsWith('http://') || simulationKey.startsWith('https://');
+
     return Container(
       margin: const EdgeInsets.only(top: 14),
       padding: const EdgeInsets.all(12),
@@ -506,7 +541,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               const Icon(LucideIcons.terminal, size: 14, color: AppColors.textBorder),
               const SizedBox(width: 6),
               Text(
-                'SIMULATOR KEY (SANDBOX)',
+                isHttpUrl ? 'URL QR SIMULATOR (SANDBOX)' : 'SIMULATOR KEY (SANDBOX)',
                 style: GoogleFonts.spaceGrotesk(
                   fontSize: 10,
                   fontWeight: FontWeight.w900,
@@ -548,7 +583,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                 ),
                 const SizedBox(width: 8),
                 GestureDetector(
-                  onTap: () => _copyToClipboard(simulationKey, 'Simulator Key / URL QR'),
+                  onTap: () => _copyToClipboard(simulationKey, isHttpUrl ? 'URL QR Midtrans' : 'Simulator Key'),
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
@@ -577,7 +612,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            'Salin dan tempel link ini ke Midtrans Simulator (simulator.sandbox.midtrans.com/qris/index) lalu klik "Pay".',
+            isHttpUrl
+                ? 'Salin dan tempel URL ini ke form Midtrans Simulator (simulator.sandbox.midtrans.com/qris/index) lalu klik "Pay".'
+                : 'Salin nilai ini atau gunakan fitur "Scan from file / Scan QR" pada simulator Midtrans.',
             style: GoogleFonts.plusJakartaSans(
               fontSize: 10,
               fontWeight: FontWeight.w600,
