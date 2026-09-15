@@ -82,6 +82,40 @@ void main() {
       expect(order.totalAmount, 300000);
     });
 
+    test('OrderModel parsing with payment_details qr_code_url and simulation_key', () {
+      final apiResponseData = {
+        'order_code': 'ORD-20260915-ABCD1234',
+        'payment_status': 'pending',
+        'payment_details': {
+          'qr_code_url': 'https://api.sandbox.midtrans.com/v2/qris/2b8f8b8c-xxxx-xxxx/qr-code',
+          'simulation_key': 'ORD-20260915-ABCD1234'
+        }
+      };
+
+      final order = OrderModel.fromJson(apiResponseData);
+      expect(order.orderCode, 'ORD-20260915-ABCD1234');
+      expect(order.isPending, true);
+      expect(order.qrCodeUrl, 'https://api.sandbox.midtrans.com/v2/qris/2b8f8b8c-xxxx-xxxx/qr-code');
+      expect(order.simulationKey, 'ORD-20260915-ABCD1234');
+
+      final initialOrder = OrderModel(
+        id: 12,
+        orderCode: 'ORD-20260915-ABCD1234',
+        userId: 99,
+        eventId: 10,
+        eventTitle: 'Music Festival 2026',
+        totalAmount: 150000,
+        status: 'pending',
+      );
+
+      final merged = initialOrder.mergeWith(order);
+      expect(merged.id, 12);
+      expect(merged.eventTitle, 'Music Festival 2026');
+      expect(merged.totalAmount, 150000);
+      expect(merged.qrCodeUrl, 'https://api.sandbox.midtrans.com/v2/qris/2b8f8b8c-xxxx-xxxx/qr-code');
+      expect(merged.simulationKey, 'ORD-20260915-ABCD1234');
+    });
+
     test('TicketModel parsing', () {
       final json = {
         'id': 101,

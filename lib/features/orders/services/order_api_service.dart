@@ -36,13 +36,14 @@ class OrderApiService {
     final responseData = response.data;
     Map<String, dynamic> orderJson = {};
 
-    if (responseData is Map<String, dynamic>) {
-      if (responseData['data'] is Map<String, dynamic>) {
-        orderJson = responseData['data'] as Map<String, dynamic>;
-      } else if (responseData['order'] is Map<String, dynamic>) {
-        orderJson = responseData['order'] as Map<String, dynamic>;
+    if (responseData is Map) {
+      final resMap = Map<String, dynamic>.from(responseData);
+      if (resMap['data'] is Map) {
+        orderJson = Map<String, dynamic>.from(resMap['data'] as Map);
+      } else if (resMap['order'] is Map) {
+        orderJson = Map<String, dynamic>.from(resMap['order'] as Map);
       } else {
-        orderJson = responseData;
+        orderJson = resMap;
       }
     }
 
@@ -55,13 +56,14 @@ class OrderApiService {
     final responseData = response.data;
     Map<String, dynamic> orderJson = {};
 
-    if (responseData is Map<String, dynamic>) {
-      if (responseData['data'] is Map<String, dynamic>) {
-        orderJson = responseData['data'] as Map<String, dynamic>;
-      } else if (responseData['order'] is Map<String, dynamic>) {
-        orderJson = responseData['order'] as Map<String, dynamic>;
+    if (responseData is Map) {
+      final resMap = Map<String, dynamic>.from(responseData);
+      if (resMap['data'] is Map) {
+        orderJson = Map<String, dynamic>.from(resMap['data'] as Map);
+      } else if (resMap['order'] is Map) {
+        orderJson = Map<String, dynamic>.from(resMap['order'] as Map);
       } else {
-        orderJson = responseData;
+        orderJson = resMap;
       }
     }
 
@@ -74,13 +76,14 @@ class OrderApiService {
     final responseData = response.data;
     List<dynamic> items = [];
 
-    if (responseData is Map<String, dynamic>) {
-      if (responseData['data'] is Map<String, dynamic> && responseData['data']['items'] is List) {
-        items = responseData['data']['items'] as List;
-      } else if (responseData['data'] is List) {
-        items = responseData['data'] as List;
-      } else if (responseData['orders'] is List) {
-        items = responseData['orders'] as List;
+    if (responseData is Map) {
+      final resMap = Map<String, dynamic>.from(responseData);
+      if (resMap['data'] is Map && (resMap['data'] as Map)['items'] is List) {
+        items = (resMap['data'] as Map)['items'] as List;
+      } else if (resMap['data'] is List) {
+        items = resMap['data'] as List;
+      } else if (resMap['orders'] is List) {
+        items = resMap['orders'] as List;
       }
     } else if (responseData is List) {
       items = responseData;

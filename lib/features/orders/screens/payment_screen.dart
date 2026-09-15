@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/neo_widgets.dart';
@@ -55,11 +57,11 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
       final order = await ref.read(orderApiServiceProvider).getOrderByCode(widget.orderCode);
       if (mounted) {
         setState(() {
-          _currentOrder = order;
+          _currentOrder = _currentOrder != null ? _currentOrder!.mergeWith(order) : order;
           _isLoading = false;
         });
 
-        if (order.isPaid) {
+        if (_currentOrder!.isPaid) {
           _pollingTimer?.cancel();
         }
       }
@@ -260,6 +262,35 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
               backgroundColor: Colors.white,
               child: Column(
                 children: [
+                  if (order.eventTitle != null && order.eventTitle!.isNotEmpty) ...[
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'EVENT',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            order.eventTitle!,
+                            textAlign: TextAlign.right,
+                            style: GoogleFonts.spaceGrotesk(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.textBorder,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const Divider(color: AppColors.divider, thickness: 1.5, height: 20),
+                  ],
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -290,28 +321,30 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       ),
                     ],
                   ),
-                  const Divider(color: AppColors.divider, thickness: 1.5, height: 20),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'TOTAL HARGA',
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.textBorder,
+                  if (order.totalAmount > 0) ...[
+                    const Divider(color: AppColors.divider, thickness: 1.5, height: 20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'TOTAL HARGA',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textBorder,
+                          ),
                         ),
-                      ),
-                      Text(
-                        Formatters.formatCurrency(order.totalAmount),
-                        style: GoogleFonts.spaceGrotesk(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.magenta,
+                        Text(
+                          Formatters.formatCurrency(order.totalAmount),
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.magenta,
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -334,25 +367,9 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                   ),
                   const SizedBox(height: 14),
 
-                  // Official Static QRIS Display
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border.all(color: AppColors.textBorder, width: 2.5),
-                      boxShadow: const [
-                        BoxShadow(color: AppColors.textBorder, offset: Offset(3, 3)),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: Image.asset(
-                        'assets/images/qris_static.png',
-                        width: 260,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  ),
+                  // Dynamic QR Display
+                  _buildQrDisplay(order),
+
                   const SizedBox(height: 12),
                   Text(
                     'Pindai QRIS di atas menggunakan aplikasi E-Wallet (GoPay, OVO, Dana, ShopeePay) atau Mobile Banking Anda',
@@ -363,6 +380,10 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
                       color: AppColors.textSecondary,
                     ),
                   ),
+
+                  // Simulation Key for Sandbox testing if available
+                  if (order.simulationKey != null && order.simulationKey!.isNotEmpty)
+                    _buildSimulationKeyCard(order.simulationKey!),
                 ],
               ),
             ),
@@ -386,6 +407,170 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildQrDisplay(OrderModel order) {
+    final qrUrl = order.qrCodeUrl;
+
+    Widget qrWidget;
+    if (qrUrl != null && qrUrl.isNotEmpty) {
+      if (qrUrl.startsWith('http://') || qrUrl.startsWith('https://')) {
+        qrWidget = CachedNetworkImage(
+          imageUrl: qrUrl,
+          width: 240,
+          height: 240,
+          fit: BoxFit.contain,
+          placeholder: (context, url) => const SizedBox(
+            width: 240,
+            height: 240,
+            child: Center(
+              child: CircularProgressIndicator(strokeWidth: 2.5, color: AppColors.textBorder),
+            ),
+          ),
+          errorWidget: (context, url, error) => Image.asset(
+            'assets/images/qris_static.png',
+            width: 240,
+            fit: BoxFit.contain,
+          ),
+        );
+      } else {
+        qrWidget = QrImageView(
+          data: qrUrl,
+          version: QrVersions.auto,
+          size: 240.0,
+          eyeStyle: const QrEyeStyle(
+            eyeShape: QrEyeShape.square,
+            color: AppColors.textBorder,
+          ),
+          dataModuleStyle: const QrDataModuleStyle(
+            dataModuleShape: QrDataModuleShape.square,
+            color: AppColors.textBorder,
+          ),
+        );
+      }
+    } else {
+      qrWidget = Image.asset(
+        'assets/images/qris_static.png',
+        width: 240,
+        fit: BoxFit.contain,
+      );
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border.all(color: AppColors.textBorder, width: 2.5),
+        boxShadow: const [
+          BoxShadow(color: AppColors.textBorder, offset: Offset(3, 3)),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(4),
+        child: qrWidget,
+      ),
+    );
+  }
+
+  Widget _buildSimulationKeyCard(String simulationKey) {
+    return Container(
+      margin: const EdgeInsets.only(top: 14),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.yellow.withValues(alpha: 0.35),
+        border: Border.all(color: AppColors.textBorder, width: 2),
+        boxShadow: const [
+          BoxShadow(color: AppColors.textBorder, offset: Offset(2, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(LucideIcons.terminal, size: 14, color: AppColors.textBorder),
+              const SizedBox(width: 6),
+              Text(
+                'SIMULATION KEY (SANDBOX)',
+                style: GoogleFonts.spaceGrotesk(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textBorder,
+                ),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: AppColors.purpleLight,
+                  border: Border.all(color: AppColors.textBorder, width: 1.5),
+                ),
+                child: Text(
+                  'MIDTRANS',
+                  style: GoogleFonts.spaceGrotesk(fontSize: 8, fontWeight: FontWeight.w900),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              border: Border.all(color: AppColors.textBorder, width: 1.5),
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: SelectableText(
+                    simulationKey,
+                    style: GoogleFonts.spaceGrotesk(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textBorder,
+                    ),
+                  ),
+                ),
+                GestureDetector(
+                  onTap: () => _copyToClipboard(simulationKey, 'Simulation Key'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: AppColors.mint,
+                      border: Border.all(color: AppColors.textBorder, width: 1.5),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(LucideIcons.copy, size: 12, color: AppColors.textBorder),
+                        const SizedBox(width: 4),
+                        Text(
+                          'SALIN',
+                          style: GoogleFonts.spaceGrotesk(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.textBorder,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Gunakan simulation key ini pada simulator Midtrans QRIS untuk simulasi pembayaran sandbox.',
+            style: GoogleFonts.plusJakartaSans(
+              fontSize: 10,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
       ),
     );
   }

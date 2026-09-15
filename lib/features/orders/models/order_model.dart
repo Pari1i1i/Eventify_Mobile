@@ -69,6 +69,7 @@ class OrderModel {
   final String? paymentUrl;
   final String? qrCodeUrl;
   final String? vaNumber;
+  final String? simulationKey;
   final DateTime? createdAt;
   final List<OrderItemModel> items;
 
@@ -85,6 +86,7 @@ class OrderModel {
     this.paymentUrl,
     this.qrCodeUrl,
     this.vaNumber,
+    this.simulationKey,
     this.createdAt,
     this.items = const [],
   });
@@ -107,13 +109,35 @@ class OrderModel {
           .toList();
     }
 
-    final paymentDetails = json['payment_details'] is Map<String, dynamic> ? json['payment_details'] as Map<String, dynamic> : null;
+    final paymentDetails = json['payment_details'] is Map
+        ? Map<String, dynamic>.from(json['payment_details'] as Map)
+        : null;
 
     final statusStr = json['payment_status']?.toString() ?? json['status']?.toString() ?? 'pending';
-    final paymentMethodStr = json['payment_method']?.toString() ?? paymentDetails?['payment_method']?.toString() ?? paymentDetails?['payment_type']?.toString();
-    final paymentUrlStr = json['payment_url']?.toString() ?? paymentDetails?['payment_url']?.toString() ?? paymentDetails?['snap_redirect_url']?.toString();
-    final qrCodeUrlStr = json['qr_code_url']?.toString() ?? paymentDetails?['qr_code_url']?.toString() ?? paymentDetails?['qris_url']?.toString();
+    final paymentMethodStr = json['payment_method']?.toString() ??
+        paymentDetails?['payment_method']?.toString() ??
+        paymentDetails?['payment_type']?.toString();
+    final paymentUrlStr = json['payment_url']?.toString() ??
+        paymentDetails?['payment_url']?.toString() ??
+        paymentDetails?['snap_redirect_url']?.toString();
+    final qrCodeUrlStr = json['qr_code_url']?.toString() ??
+        paymentDetails?['qr_code_url']?.toString() ??
+        paymentDetails?['qris_url']?.toString();
     final vaNumberStr = json['va_number']?.toString() ?? paymentDetails?['va_number']?.toString();
+    final simulationKeyStr = json['simulation_key']?.toString() ??
+        paymentDetails?['simulation_key']?.toString();
+
+    final totalAmountVal = json['total_amount'] is num
+        ? json['total_amount'] as num
+        : json['gross_amount'] is num
+            ? json['gross_amount'] as num
+            : paymentDetails?['gross_amount'] is num
+                ? paymentDetails!['gross_amount'] as num
+                : num.tryParse(json['total_amount']?.toString() ??
+                        json['gross_amount']?.toString() ??
+                        paymentDetails?['gross_amount']?.toString() ??
+                        '0') ??
+                    0;
 
     return OrderModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
@@ -122,16 +146,71 @@ class OrderModel {
       eventId: json['event_id'] is int ? json['event_id'] : int.tryParse(json['event_id']?.toString() ?? '0') ?? 0,
       eventTitle: json['event_name']?.toString() ?? json['event_title']?.toString() ?? json['event']?['title']?.toString() ?? json['event']?['name']?.toString(),
       eventBanner: json['event_banner']?.toString() ?? json['event']?['banner_url']?.toString(),
-      totalAmount: json['total_amount'] is num
-          ? json['total_amount']
-          : num.tryParse(json['total_amount']?.toString() ?? '0') ?? 0,
+      totalAmount: totalAmountVal,
       status: statusStr.toLowerCase(),
       paymentMethod: paymentMethodStr,
       paymentUrl: paymentUrlStr,
       qrCodeUrl: qrCodeUrlStr,
       vaNumber: vaNumberStr,
+      simulationKey: simulationKeyStr,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
       items: orderItems,
+    );
+  }
+
+  OrderModel mergeWith(OrderModel other) {
+    return OrderModel(
+      id: other.id != 0 ? other.id : id,
+      orderCode: other.orderCode.isNotEmpty ? other.orderCode : orderCode,
+      userId: other.userId != 0 ? other.userId : userId,
+      eventId: other.eventId != 0 ? other.eventId : eventId,
+      eventTitle: (other.eventTitle != null && other.eventTitle!.isNotEmpty) ? other.eventTitle : eventTitle,
+      eventBanner: (other.eventBanner != null && other.eventBanner!.isNotEmpty) ? other.eventBanner : eventBanner,
+      totalAmount: other.totalAmount > 0 ? other.totalAmount : totalAmount,
+      status: other.status.isNotEmpty ? other.status : status,
+      paymentMethod: other.paymentMethod ?? paymentMethod,
+      paymentUrl: other.paymentUrl ?? paymentUrl,
+      qrCodeUrl: other.qrCodeUrl ?? qrCodeUrl,
+      vaNumber: other.vaNumber ?? vaNumber,
+      simulationKey: other.simulationKey ?? simulationKey,
+      createdAt: other.createdAt ?? createdAt,
+      items: other.items.isNotEmpty ? other.items : items,
+    );
+  }
+
+  OrderModel copyWith({
+    int? id,
+    String? orderCode,
+    int? userId,
+    int? eventId,
+    String? eventTitle,
+    String? eventBanner,
+    num? totalAmount,
+    String? status,
+    String? paymentMethod,
+    String? paymentUrl,
+    String? qrCodeUrl,
+    String? vaNumber,
+    String? simulationKey,
+    DateTime? createdAt,
+    List<OrderItemModel>? items,
+  }) {
+    return OrderModel(
+      id: id ?? this.id,
+      orderCode: orderCode ?? this.orderCode,
+      userId: userId ?? this.userId,
+      eventId: eventId ?? this.eventId,
+      eventTitle: eventTitle ?? this.eventTitle,
+      eventBanner: eventBanner ?? this.eventBanner,
+      totalAmount: totalAmount ?? this.totalAmount,
+      status: status ?? this.status,
+      paymentMethod: paymentMethod ?? this.paymentMethod,
+      paymentUrl: paymentUrl ?? this.paymentUrl,
+      qrCodeUrl: qrCodeUrl ?? this.qrCodeUrl,
+      vaNumber: vaNumber ?? this.vaNumber,
+      simulationKey: simulationKey ?? this.simulationKey,
+      createdAt: createdAt ?? this.createdAt,
+      items: items ?? this.items,
     );
   }
 
@@ -151,6 +230,7 @@ class OrderModel {
       'payment_url': paymentUrl,
       'qr_code_url': qrCodeUrl,
       'va_number': vaNumber,
+      'simulation_key': simulationKey,
       'created_at': createdAt?.toIso8601String(),
       'items': items.map((e) => e.toJson()).toList(),
     };
