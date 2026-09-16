@@ -39,6 +39,8 @@ class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
   Widget _buildTicketCard(TicketModel ticket) {
     final isValid = ticket.isValid;
 
+    debugPrint('TICKET_CARD: ${ticket.ticketCode} - status: "${ticket.status}", isValid: $isValid, isUsed: ${ticket.isUsed}, checkedInAt: ${ticket.checkedInAt}');
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
@@ -86,8 +88,14 @@ class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
                       ],
                     ),
                     NeoBadge(
-                      label: isValid ? 'VALID' : (ticket.isUsed ? 'SUDAH SCAN' : 'BATAL'),
-                      backgroundColor: isValid ? AppColors.mint : (ticket.isUsed ? AppColors.orange : AppColors.pink),
+                      label: ticket.isUsed
+                          ? 'SUDAH SCAN'
+                          : (ticket.isCancelled
+                              ? 'BATAL'
+                              : (isValid ? 'VALID' : ticket.status.toUpperCase())),
+                      backgroundColor: ticket.isUsed
+                          ? AppColors.orange
+                          : (ticket.isCancelled ? AppColors.pink : AppColors.mint),
                       textColor: AppColors.textBorder,
                       hasBorder: true,
                     ),

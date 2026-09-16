@@ -31,7 +31,7 @@ class ScannerApiService {
       return ScanResultModel.fromJson(responseData, ticketCode);
     } on ApiException catch (e) {
       final msg = e.message.toLowerCase();
-      if (msg.contains('sudah') || msg.contains('already') || msg.contains('duplikat') || msg.contains('used')) {
+      if (msg.contains('sudah') || msg.contains('already') || msg.contains('duplikat') || msg.contains('used') || msg.contains('terpakai')) {
         return ScanResultModel(
           status: ScanStatus.duplicate,
           message: e.message,

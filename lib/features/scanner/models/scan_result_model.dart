@@ -32,13 +32,27 @@ class ScanResultModel {
   bool get isInvalid => status == ScanStatus.invalid;
 
   factory ScanResultModel.fromJson(Map<String, dynamic> json, String scannedCode) {
-    final statusStr = json['status']?.toString().toLowerCase() ?? '';
-    final msg = json['message']?.toString() ?? '';
+    final statusStr = json['status']?.toString().toLowerCase().trim() ?? '';
+    final msg = json['message']?.toString().trim() ?? '';
+    final successBool = json['success'] == true;
+
+    final lowerMsg = msg.toLowerCase();
     
     ScanStatus parsedStatus = ScanStatus.invalid;
-    if (statusStr == 'success' || statusStr == 'valid' || msg.toLowerCase().contains('berhasil') || msg.toLowerCase().contains('sukses')) {
+    if (successBool ||
+        statusStr == 'success' ||
+        statusStr == 'valid' ||
+        lowerMsg.contains('successfully') ||
+        lowerMsg.contains('berhasil') ||
+        lowerMsg.contains('sukses') ||
+        lowerMsg.contains('checked in')) {
       parsedStatus = ScanStatus.success;
-    } else if (statusStr == 'duplicate' || statusStr == 'already_used' || msg.toLowerCase().contains('sudah') || msg.toLowerCase().contains('duplikat')) {
+    } else if (statusStr == 'duplicate' ||
+        statusStr == 'already_used' ||
+        lowerMsg.contains('already') ||
+        lowerMsg.contains('sudah') ||
+        lowerMsg.contains('duplikat') ||
+        lowerMsg.contains('terpakai')) {
       parsedStatus = ScanStatus.duplicate;
     }
 

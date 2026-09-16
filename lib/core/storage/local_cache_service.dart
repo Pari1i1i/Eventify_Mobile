@@ -19,7 +19,11 @@ class LocalCacheService {
 
   String getBaseUrl() {
     final saved = _prefs.getString(ApiConstants.customBaseUrlKey);
-    if (saved == null || saved.isEmpty || saved.contains('localhost:8080') || saved.contains('10.0.2.2:8080')) {
+    if (saved == null ||
+        saved.isEmpty ||
+        saved.contains('localhost:8080') ||
+        saved.contains('10.0.2.2:8080') ||
+        saved.contains('139.190.96.203')) {
       return ApiConstants.defaultBaseUrl;
     }
     return saved;

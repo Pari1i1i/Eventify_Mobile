@@ -62,13 +62,20 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
 
       final result = await ref.read(scannerApiServiceProvider).checkIn(code);
 
-      // Panitia Ownership Validation Check
-      if (user?.role.toLowerCase() == 'organizer') {
+      // Panitia Ownership Validation Check (Only for Organizer, not Admin)
+      final userRole = user?.role.toLowerCase() ?? '';
+      if (userRole == 'organizer') {
         final isMyEvent = myEvents.any((e) =>
             (result.eventId != null && result.eventId! > 0 && e.id == result.eventId) ||
-            (result.eventTitle != null && result.eventTitle!.isNotEmpty && e.title.toLowerCase().trim() == result.eventTitle!.toLowerCase().trim()));
+            (result.eventTitle != null &&
+                result.eventTitle!.isNotEmpty &&
+                e.title.toLowerCase().trim() == result.eventTitle!.toLowerCase().trim()));
 
-        if (!isMyEvent && myEvents.isNotEmpty) {
+        // Only block if we actually have eventId or eventTitle to compare and it definitely doesn't match
+        final hasEventInfo = (result.eventId != null && result.eventId! > 0) ||
+            (result.eventTitle != null && result.eventTitle!.isNotEmpty);
+
+        if (hasEventInfo && !isMyEvent && myEvents.isNotEmpty) {
           if (mounted) {
             _showResultDialog(
               ScanResultModel(

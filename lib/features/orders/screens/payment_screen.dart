@@ -11,6 +11,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/formatters.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../models/order_model.dart';
+import '../providers/orders_provider.dart';
 import '../services/order_api_service.dart';
 
 class PaymentScreen extends ConsumerStatefulWidget {
@@ -56,6 +57,7 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
     try {
       final order = await ref.read(orderApiServiceProvider).getOrderByCode(widget.orderCode);
       if (mounted) {
+        debugPrint('EVENTIFY_PAYMENT: orderCode=${order.orderCode}, status=${order.status}, isPaid=${order.isPaid}');
         setState(() {
           _currentOrder = _currentOrder != null ? _currentOrder!.mergeWith(order) : order;
           _isLoading = false;
@@ -63,6 +65,8 @@ class _PaymentScreenState extends ConsumerState<PaymentScreen> {
 
         if (_currentOrder!.isPaid) {
           _pollingTimer?.cancel();
+          // Reload orders and tickets so the list and badge update automatically
+          ref.refresh(ordersProvider.notifier).loadOrders();
         }
       }
     } catch (e) {

@@ -145,6 +145,19 @@ void main() {
       final scan = ScanResultModel.fromJson(json, 'EVT-RUN-001');
       expect(scan.isSuccess, true);
       expect(scan.attendeeName, 'Ahmad Fauzi');
+
+      final jsonEnglish = {
+        'success': true,
+        'message': 'Attendee successfully checked in',
+        'data': {
+          'ticket_code': 'EVT-RUN-002',
+          'attendee_name': 'Budi Santoso',
+          'tier_name': 'Reguler',
+        },
+      };
+      final scanEnglish = ScanResultModel.fromJson(jsonEnglish, 'EVT-RUN-002');
+      expect(scanEnglish.isSuccess, true);
+      expect(scanEnglish.attendeeName, 'Budi Santoso');
     });
   });
 }

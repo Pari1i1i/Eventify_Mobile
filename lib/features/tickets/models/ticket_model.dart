@@ -37,9 +37,25 @@ class TicketModel {
     this.createdAt,
   });
 
-  bool get isValid => status.toLowerCase() == 'valid' || status.toLowerCase() == 'active';
-  bool get isUsed => status.toLowerCase() == 'used' || status.toLowerCase() == 'checked_in' || checkedInAt != null;
-  bool get isCancelled => status.toLowerCase() == 'cancelled' || status.toLowerCase() == 'cancel';
+  bool get isValid =>
+      (status.toLowerCase() == 'valid' ||
+       status.toLowerCase() == 'active' ||
+       status.toLowerCase() == 'unused' ||
+       status.toLowerCase() == 'pending') &&
+      !isUsed &&
+      !isCancelled;
+
+  bool get isUsed =>
+      status.toLowerCase() == 'used' ||
+      status.toLowerCase() == 'checked_in' ||
+      status.toLowerCase() == 'scanned' ||
+      checkedInAt != null;
+
+  bool get isCancelled =>
+      status.toLowerCase() == 'cancelled' ||
+      status.toLowerCase() == 'cancel' ||
+      status.toLowerCase() == 'void' ||
+      status.toLowerCase() == 'expired';
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
     final eventObj = json['event'] is Map<String, dynamic> 
@@ -78,6 +94,15 @@ class TicketModel {
         eventObj?['venue']?.toString() ?? 
         eventObj?['lokasi']?.toString() ?? 
         'Venue';
+        json['location']?.toString() ?? 
+        json['venue']?.toString() ?? 
+        json['event_location']?.toString() ?? 
+        json['lokasi']?.toString() ?? 
+        eventObj?['location']?.toString() ?? 
+        eventObj?['venue_name']?.toString() ?? 
+        eventObj?['venue']?.toString() ?? 
+        eventObj?['lokasi']?.toString() ?? 
+        'Venue';
 
     final venueAddress = json['venue_address']?.toString() ?? 
         json['address']?.toString() ?? 
@@ -105,6 +130,13 @@ class TicketModel {
         ? json['event_id'] 
         : int.tryParse(json['event_id']?.toString() ?? eventObj?['id']?.toString() ?? '0') ?? 0;
 
+    final checkedInStr = json['checked_in_at'] ?? json['used_at'] ?? json['scanned_at'];
+    final checkedInAt = (checkedInStr != null && checkedInStr.toString().trim().isNotEmpty)
+        ? DateTime.tryParse(checkedInStr.toString())
+        : null;
+
+    final rawStatus = json['status']?.toString().toLowerCase().trim() ?? 'valid';
+
     return TicketModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       ticketCode: code,
@@ -124,8 +156,8 @@ class TicketModel {
       attendeeName: attendeeName,
       attendeeEmail: json['attendee_email']?.toString() ?? json['customer_email']?.toString(),
       attendeePhone: json['attendee_phone']?.toString(),
-      status: json['status']?.toString().toLowerCase() ?? 'valid',
-      checkedInAt: json['checked_in_at'] != null ? DateTime.tryParse(json['checked_in_at'].toString()) : null,
+      status: rawStatus,
+      checkedInAt: checkedInAt,
       createdAt: json['created_at'] != null ? DateTime.tryParse(json['created_at'].toString()) : null,
     );
   }
