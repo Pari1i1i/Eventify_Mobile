@@ -44,10 +44,9 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
   bool _isLoading = false;
 
   final List<String> _categoryOptions = [
-    'Olahraga & Lari',
-    'Kompetisi Anak',
-    'Teknologi & AI',
-    'Musik & Konser',
+    'Olahraga',
+    'Teknologi',
+    'Konser',
     'Workshop',
     'Umum',
   ];
@@ -57,7 +56,7 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
     super.initState();
     final ev = widget.initialEvent;
     _titleController = TextEditingController(text: ev?.title ?? '');
-    _categoryController = TextEditingController(text: ev?.category ?? 'Olahraga & Lari');
+    _categoryController = TextEditingController(text: ev?.category ?? 'Umum');
     _descriptionController = TextEditingController(text: ev?.description ?? '');
     _venueNameController = TextEditingController(text: ev?.venueName ?? '');
     _venueAddressController = TextEditingController(text: ev?.venueAddress ?? '');

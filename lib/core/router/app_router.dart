@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/auth/providers/auth_provider.dart';
 import '../../features/auth/screens/login_screen.dart';
 import '../../features/auth/screens/profile_screen.dart';
 import '../../features/auth/screens/register_screen.dart';
@@ -56,6 +57,16 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/home',
             builder: (context, state) => const HomeEventsScreen(),
+            redirect: (context, state) {
+              final authState = ref.read(authStateProvider);
+              if (authState.isAuthenticated) {
+                final role = authState.user?.role.toLowerCase() ?? '';
+                if (role == 'organizer' || role == 'panitia' || role == 'admin') {
+                  return '/organizer/dashboard';
+                }
+              }
+              return null;
+            },
           ),
           GoRoute(
             path: '/tickets',

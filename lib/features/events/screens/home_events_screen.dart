@@ -26,12 +26,11 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
 
   final List<String> _baseCategories = [
     'Semua',
-    'Musik',
+    'Olahraga',
+    'Teknologi',
     'Konser',
-    'Teknologi & AI',
     'Workshop',
-    'Olahraga & Lari',
-    'Kompetisi Anak',
+    'Umum',
   ];
 
   bool _matchesCategory(String eventCategory, String targetCategory) {
@@ -90,6 +89,16 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final auth = ref.read(authStateProvider);
+      if (auth.isAuthenticated) {
+        final role = auth.user?.role.toLowerCase() ?? '';
+        if (role == 'organizer' || role == 'panitia' || role == 'admin') {
+          context.go('/organizer/dashboard');
+        }
+      }
+    });
   }
 
   void _onScroll() {

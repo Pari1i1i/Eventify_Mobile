@@ -61,7 +61,7 @@ class MainShellNav extends ConsumerWidget {
         return i;
       }
     }
-    return 0;
+    return -1;
   }
 
   @override
@@ -95,11 +95,12 @@ class MainShellNav extends ConsumerWidget {
               children: List.generate(items.length, (index) {
                 final item = items[index];
                 final isSelected = index == selectedIndex;
+                final currentLocation = GoRouterState.of(context).uri.path;
 
                 return Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      if (index != selectedIndex) {
+                      if (currentLocation != item.route) {
                         context.go(item.route);
                       }
                     },

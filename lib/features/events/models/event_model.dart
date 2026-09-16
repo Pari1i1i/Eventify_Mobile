@@ -199,26 +199,26 @@ class EventModel {
       return 'Musik & Konser';
     }
 
-    // 3. Fallback: Default to 'Musik & Konser' (matching admin platform default)
-    return 'Musik & Konser';
+    // 3. Fallback: Default to 'Umum'
+    return 'Umum';
   }
 
   static String _normalizeCategory(String cat) {
-    final lower = cat.toLowerCase();
-    if (lower.contains('musik') || lower.contains('music') || lower.contains('konser')) {
-      return 'Musik & Konser';
+    final lower = cat.toLowerCase().trim();
+    if (lower == 'olahraga' || lower.contains('olah') || lower.contains('lari') || lower.contains('sport') || lower.contains('run')) {
+      return 'Olahraga';
     }
-    if (lower.contains('tekno') || lower.contains('tech') || lower.contains('ai')) {
-      return 'Teknologi & AI';
+    if (lower == 'teknologi' || lower.contains('tekno') || lower.contains('tech') || lower.contains('ai')) {
+      return 'Teknologi';
     }
-    if (lower.contains('olah') || lower.contains('lari') || lower.contains('run') || lower.contains('sport')) {
-      return 'Olahraga & Lari';
+    if (lower == 'konser' || lower.contains('musik') || lower.contains('music') || lower.contains('konser')) {
+      return 'Konser';
     }
-    if (lower.contains('work') || lower.contains('seminar') || lower.contains('bootcamp') || lower.contains('class')) {
+    if (lower == 'workshop' || lower.contains('work') || lower.contains('seminar') || lower.contains('bootcamp') || lower.contains('class')) {
       return 'Workshop';
     }
-    if (lower.contains('anak') || lower.contains('kids')) {
-      return 'Kompetisi Anak';
+    if (lower == 'umum') {
+      return 'Umum';
     }
     return cat;
   }

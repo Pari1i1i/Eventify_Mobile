@@ -42,7 +42,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     if (mounted) {
       if (success) {
         showNeoSnackBar(context, 'Login berhasil!', isSuccess: true);
-        context.go('/home');
+        final user = ref.read(authStateProvider).user;
+        final role = user?.role.toLowerCase() ?? 'customer';
+        if (role == 'organizer' || role == 'panitia' || role == 'admin') {
+          context.go('/organizer/dashboard');
+        } else {
+          context.go('/home');
+        }
       } else {
         final err = ref.read(authStateProvider).errorMessage ?? 'Gagal login';
         showNeoSnackBar(context, err, isError: true);
@@ -54,7 +60,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final success = await ref.read(authStateProvider.notifier).triggerGoogleSignIn();
     if (mounted && success) {
       showNeoSnackBar(context, 'Login Google berhasil!', isSuccess: true);
-      context.go('/home');
+      final user = ref.read(authStateProvider).user;
+      final role = user?.role.toLowerCase() ?? 'customer';
+      if (role == 'organizer' || role == 'panitia' || role == 'admin') {
+        context.go('/organizer/dashboard');
+      } else {
+        context.go('/home');
+      }
     } else if (mounted) {
       final err = ref.read(authStateProvider).errorMessage;
       if (err != null && err.isNotEmpty) {

@@ -31,7 +31,12 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
     final authState = ref.read(authStateProvider);
     if (authState.isAuthenticated) {
-      context.go('/home');
+      final role = authState.user?.role.toLowerCase() ?? 'customer';
+      if (role == 'organizer' || role == 'panitia' || role == 'admin') {
+        context.go('/organizer/dashboard');
+      } else {
+        context.go('/home');
+      }
     } else {
       context.go('/home'); // Unauthenticated users can view Home catalog
     }
