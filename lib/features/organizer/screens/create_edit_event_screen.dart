@@ -48,7 +48,7 @@ class _CreateEditEventScreenState extends ConsumerState<CreateEditEventScreen> {
     'Kompetisi Anak',
     'Teknologi & AI',
     'Musik & Konser',
-    'Workshop & Seminar',
+    'Workshop',
     'Umum',
   ];
 

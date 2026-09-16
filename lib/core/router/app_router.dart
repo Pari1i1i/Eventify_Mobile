@@ -14,6 +14,7 @@ import '../../features/orders/screens/my_orders_screen.dart';
 import '../../features/orders/screens/payment_screen.dart';
 import '../../features/organizer/screens/create_edit_event_screen.dart';
 import '../../features/organizer/screens/manage_ticket_tiers_screen.dart';
+import '../../features/organizer/screens/organizer_dashboard_screen.dart';
 import '../../features/organizer/screens/organizer_events_screen.dart';
 import '../../features/scanner/screens/scanner_screen.dart';
 import '../../features/tickets/models/ticket_model.dart';

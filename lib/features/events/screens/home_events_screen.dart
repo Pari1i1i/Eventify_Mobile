@@ -26,7 +26,8 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
 
   final List<String> _baseCategories = [
     'Semua',
-    'Musik & Konser',
+    'Musik',
+    'Konser',
     'Teknologi & AI',
     'Workshop',
     'Olahraga & Lari',
@@ -42,10 +43,6 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
     if (ev.contains(target) || target.contains(ev)) return true;
 
     // Flexible category cross-matching
-    if ((target.contains('musik') || target.contains('konser') || target.contains('music')) &&
-        (ev.contains('musik') || ev.contains('konser') || ev.contains('music'))) {
-      return true;
-    }
     if ((target.contains('tekno') || target.contains('ai') || target.contains('tech')) &&
         (ev.contains('tekno') || ev.contains('ai') || ev.contains('tech'))) {
       return true;
@@ -64,6 +61,12 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
     }
 
     return false;
+  }
+
+  bool _isEventPast(DateTime? endTime) {
+    if (endTime == null) return false;
+    final now = DateTime.now();
+    return endTime.isBefore(now);
   }
 
   int _countEventsForCategory(List<EventModel> events, String category) {
@@ -135,10 +138,13 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
     final eventsState = ref.watch(eventsProvider);
     final authState = ref.watch(authStateProvider);
 
+    // Filter out past events
+    final nonPastEvents = eventsState.events.where((e) => !_isEventPast(e.endTime)).toList();
+
     // Filter local categories if selected
     final displayedEvents = _selectedCategory == 'Semua'
-        ? eventsState.events
-        : eventsState.events.where((e) {
+        ? nonPastEvents
+        : nonPastEvents.where((e) {
             return _matchesCategory(e.category, _selectedCategory);
           }).toList();
 

@@ -198,7 +198,7 @@ class OrganizerDashboardScreen extends ConsumerWidget {
                                     Expanded(
                                       child: NeoButton(
                                         text: 'BUKA SCANNER',
-                                        icon: LucideIcons.scanner,
+                                        icon: LucideIcons.scanLine,
                                         backgroundColor: AppColors.mint,
                                         height: 36,
                                         fontSize: 10,
