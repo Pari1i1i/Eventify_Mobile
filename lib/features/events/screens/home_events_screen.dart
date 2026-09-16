@@ -6,6 +6,7 @@ import 'package:lucide_icons/lucide_icons.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/widgets/neo_widgets.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../models/event_model.dart';
 import '../providers/events_provider.dart';
 import '../widgets/event_card.dart';
 
@@ -23,14 +24,64 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
   bool _isSearchExpanded = false;
   String _selectedCategory = 'Semua';
 
-  final List<String> _categories = [
+  final List<String> _baseCategories = [
     'Semua',
+    'Musik & Konser',
+    'Teknologi & AI',
+    'Workshop',
     'Olahraga & Lari',
     'Kompetisi Anak',
-    'Teknologi & AI',
-    'Musik & Konser',
-    'Workshop',
   ];
+
+  bool _matchesCategory(String eventCategory, String targetCategory) {
+    if (targetCategory == 'Semua') return true;
+    final ev = eventCategory.toLowerCase().trim();
+    final target = targetCategory.toLowerCase().trim();
+
+    if (ev == target) return true;
+    if (ev.contains(target) || target.contains(ev)) return true;
+
+    // Flexible category cross-matching
+    if ((target.contains('musik') || target.contains('konser') || target.contains('music')) &&
+        (ev.contains('musik') || ev.contains('konser') || ev.contains('music'))) {
+      return true;
+    }
+    if ((target.contains('tekno') || target.contains('ai') || target.contains('tech')) &&
+        (ev.contains('tekno') || ev.contains('ai') || ev.contains('tech'))) {
+      return true;
+    }
+    if ((target.contains('olah') || target.contains('lari') || target.contains('sport') || target.contains('run')) &&
+        (ev.contains('olah') || ev.contains('lari') || ev.contains('sport') || ev.contains('run'))) {
+      return true;
+    }
+    if ((target.contains('work') || target.contains('seminar') || target.contains('bootcamp') || target.contains('class') || target.contains('design')) &&
+        (ev.contains('work') || ev.contains('seminar') || ev.contains('bootcamp') || ev.contains('class') || ev.contains('design'))) {
+      return true;
+    }
+    if ((target.contains('anak') || target.contains('kids')) &&
+        (ev.contains('anak') || ev.contains('kids'))) {
+      return true;
+    }
+
+    return false;
+  }
+
+  int _countEventsForCategory(List<EventModel> events, String category) {
+    if (category == 'Semua') return events.length;
+    return events.where((e) => _matchesCategory(e.category, category)).length;
+  }
+
+  List<String> _getAvailableCategories(List<EventModel> events) {
+    final result = <String>[..._baseCategories];
+    for (final e in events) {
+      if (e.category.isNotEmpty && e.category != 'Event') {
+        if (!result.any((r) => _matchesCategory(e.category, r))) {
+          result.add(e.category);
+        }
+      }
+    }
+    return result;
+  }
 
   @override
   void initState() {
@@ -88,10 +139,10 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
     final displayedEvents = _selectedCategory == 'Semua'
         ? eventsState.events
         : eventsState.events.where((e) {
-            final cat = e.category.toLowerCase();
-            final target = _selectedCategory.toLowerCase();
-            return cat.contains(target) || target.contains(cat);
+            return _matchesCategory(e.category, _selectedCategory);
           }).toList();
+
+    final availableCategories = _getAvailableCategories(eventsState.events);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -269,10 +320,12 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: _categories.length,
+                  itemCount: availableCategories.length,
                   itemBuilder: (context, index) {
-                    final cat = _categories[index];
+                    final cat = availableCategories[index];
                     final isSelected = _selectedCategory == cat;
+                    final count = _countEventsForCategory(eventsState.events, cat);
+
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
                       child: GestureDetector(
@@ -299,13 +352,35 @@ class _HomeEventsScreenState extends ConsumerState<HomeEventsScreen> {
                                     ),
                                   ],
                           ),
-                          child: Text(
-                            cat,
-                            style: GoogleFonts.spaceGrotesk(
-                              color: isSelected ? Colors.white : AppColors.textBorder,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w900,
-                            ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                cat,
+                                style: GoogleFonts.spaceGrotesk(
+                                  color: isSelected ? Colors.white : AppColors.textBorder,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: isSelected ? AppColors.yellow : AppColors.purpleLight,
+                                  borderRadius: BorderRadius.circular(4),
+                                  border: Border.all(color: AppColors.textBorder, width: 1),
+                                ),
+                                child: Text(
+                                  count.toString(),
+                                  style: GoogleFonts.spaceGrotesk(
+                                    color: AppColors.textBorder,
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w900,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ),

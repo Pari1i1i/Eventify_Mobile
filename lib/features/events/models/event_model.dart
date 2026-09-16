@@ -76,12 +76,18 @@ class EventModel {
             ? DateTime.tryParse(json['end_time'].toString())
             : null;
 
+    final resolvedCategory = _resolveCategory(
+      json: json,
+      title: title,
+      description: json['description']?.toString() ?? json['deskripsi']?.toString() ?? '',
+    );
+
     return EventModel(
       id: json['id'] is int ? json['id'] : int.tryParse(json['id']?.toString() ?? '0') ?? 0,
       title: title,
       slug: json['slug']?.toString() ?? json['id']?.toString() ?? '',
       description: json['description']?.toString() ?? json['deskripsi']?.toString() ?? '',
-      category: json['category']?.toString() ?? json['kategori']?.toString() ?? 'Event',
+      category: resolvedCategory,
       bannerUrl: json['banner_url']?.toString() ?? json['banner_path']?.toString() ?? json['banner']?.toString(),
       venueName: location,
       venueAddress: json['venue_address']?.toString() ?? json['alamat']?.toString(),
@@ -98,6 +104,123 @@ class EventModel {
       ticketTiers: tiers,
       minPrice: json['min_price'] is num ? json['min_price'] : num.tryParse(json['min_price']?.toString() ?? '0'),
     );
+  }
+
+  static String _resolveCategory({
+    required Map<String, dynamic> json,
+    required String title,
+    required String description,
+  }) {
+    // 1. Direct field from API if exists and not generic 'Event'
+    final rawCat = json['category']?.toString() ??
+        json['kategori']?.toString() ??
+        json['category_name']?.toString() ??
+        json['type']?.toString();
+
+    if (rawCat != null &&
+        rawCat.trim().isNotEmpty &&
+        rawCat.trim().toLowerCase() != 'event' &&
+        rawCat.trim().toLowerCase() != 'null') {
+      return _normalizeCategory(rawCat.trim());
+    }
+
+    // 2. Intelligent inference from title, slug, and description
+    final combined = '$title $description ${json['slug'] ?? ''}'.toLowerCase();
+
+    // Olahraga & Lari
+    if (combined.contains('run') ||
+        combined.contains('lari') ||
+        combined.contains('marathon') ||
+        combined.contains('fun run') ||
+        combined.contains('sepeda') ||
+        combined.contains('bike') ||
+        combined.contains('sport') ||
+        combined.contains('olahraga') ||
+        combined.contains('futsal') ||
+        combined.contains('badminton') ||
+        combined.contains('gym')) {
+      return 'Olahraga & Lari';
+    }
+
+    // Kompetisi Anak
+    if (combined.contains('anak') ||
+        combined.contains('kids') ||
+        combined.contains('balita') ||
+        combined.contains('pushbike') ||
+        combined.contains('lomba anak') ||
+        combined.contains('bocah')) {
+      return 'Kompetisi Anak';
+    }
+
+    // Teknologi & AI
+    if (combined.contains('ai') ||
+        combined.contains('tech') ||
+        combined.contains('teknologi') ||
+        combined.contains('cloud') ||
+        combined.contains('cyber') ||
+        combined.contains('ctf') ||
+        combined.contains('security') ||
+        combined.contains('coding') ||
+        combined.contains('developer') ||
+        combined.contains('unreal') ||
+        combined.contains('game dev') ||
+        combined.contains('software') ||
+        combined.contains('summit')) {
+      return 'Teknologi & AI';
+    }
+
+    // Workshop & Seminar
+    if (combined.contains('workshop') ||
+        combined.contains('masterclass') ||
+        combined.contains('bootcamp') ||
+        combined.contains('ui/ux') ||
+        combined.contains('design') ||
+        combined.contains('pelatihan') ||
+        combined.contains('seminar') ||
+        combined.contains('training') ||
+        combined.contains('kursus') ||
+        combined.contains('kelas')) {
+      return 'Workshop';
+    }
+
+    // Musik & Konser
+    if (combined.contains('musik') ||
+        combined.contains('music') ||
+        combined.contains('konser') ||
+        combined.contains('concert') ||
+        combined.contains('soundwave') ||
+        combined.contains('fest') ||
+        combined.contains('festival') ||
+        combined.contains('vivera') ||
+        combined.contains('band') ||
+        combined.contains('pensi') ||
+        combined.contains('akustik') ||
+        combined.contains('song')) {
+      return 'Musik & Konser';
+    }
+
+    // 3. Fallback: Default to 'Musik & Konser' (matching admin platform default)
+    return 'Musik & Konser';
+  }
+
+  static String _normalizeCategory(String cat) {
+    final lower = cat.toLowerCase();
+    if (lower.contains('musik') || lower.contains('music') || lower.contains('konser')) {
+      return 'Musik & Konser';
+    }
+    if (lower.contains('tekno') || lower.contains('tech') || lower.contains('ai')) {
+      return 'Teknologi & AI';
+    }
+    if (lower.contains('olah') || lower.contains('lari') || lower.contains('run') || lower.contains('sport')) {
+      return 'Olahraga & Lari';
+    }
+    if (lower.contains('work') || lower.contains('seminar') || lower.contains('bootcamp') || lower.contains('class')) {
+      return 'Workshop';
+    }
+    if (lower.contains('anak') || lower.contains('kids')) {
+      return 'Kompetisi Anak';
+    }
+    return cat;
   }
 
   Map<String, dynamic> toJson() {
