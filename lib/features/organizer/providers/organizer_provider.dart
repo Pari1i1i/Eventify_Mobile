@@ -14,6 +14,53 @@ class OrganizerState {
     this.errorMessage,
   });
 
+  int get totalTicketsSold {
+    int count = 0;
+    for (final e in events) {
+      for (final t in e.ticketTiers) {
+        final sold = t.quota - t.remainingQuota;
+        if (sold > 0) count += sold;
+      }
+    }
+    return count;
+  }
+
+  int get totalTicketsQuota {
+    int count = 0;
+    for (final e in events) {
+      for (final t in e.ticketTiers) {
+        count += t.quota;
+      }
+    }
+    return count;
+  }
+
+  num get totalEstimatedRevenue {
+    num total = 0;
+    for (final e in events) {
+      for (final t in e.ticketTiers) {
+        final sold = t.quota - t.remainingQuota;
+        if (sold > 0) {
+          total += (sold * t.price);
+        }
+      }
+    }
+    return total;
+  }
+
+  int get activeEventsCount =>
+      events.where((e) => e.status.toLowerCase() == 'published').length;
+
+  EventModel? get focusEvent {
+    if (events.isEmpty) return null;
+    // Prefer the first published event, or fallback to the latest created event
+    final published = events.where((e) => e.status.toLowerCase() == 'published').toList();
+    if (published.isNotEmpty) {
+      return published.first;
+    }
+    return events.first;
+  }
+
   OrganizerState copyWith({
     List<EventModel>? events,
     bool? isLoading,
@@ -68,3 +115,6 @@ final organizerProvider = StateNotifierProvider<OrganizerNotifier, OrganizerStat
   final apiService = ref.watch(organizerApiServiceProvider);
   return OrganizerNotifier(apiService);
 });
+
+// Session check-in counter (increments in real-time during scan session)
+final checkInSessionCounterProvider = StateProvider<int>((ref) => 0);

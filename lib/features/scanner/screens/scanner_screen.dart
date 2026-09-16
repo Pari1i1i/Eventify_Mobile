@@ -92,6 +92,9 @@ class _ScannerScreenState extends ConsumerState<ScannerScreen> {
       }
 
       if (mounted) {
+        if (result.isSuccess) {
+          ref.read(checkInSessionCounterProvider.notifier).state++;
+        }
         _showResultDialog(result);
       }
     } catch (e) {

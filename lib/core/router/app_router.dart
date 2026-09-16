@@ -69,6 +69,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const ProfileScreen(),
           ),
           GoRoute(
+            path: '/organizer/dashboard',
+            builder: (context, state) => const OrganizerDashboardScreen(),
+          ),
+          GoRoute(
             path: '/organizer/my-events',
             builder: (context, state) => const OrganizerEventsScreen(),
           ),

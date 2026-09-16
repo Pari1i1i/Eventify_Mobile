@@ -34,14 +34,13 @@ class MainShellNav extends ConsumerWidget {
     }
 
     final lower = role.toLowerCase();
-    // Organizer & Admin use the Organizer toolkit on mobile (Event Saya + Scanner + Tiket)
+    // Organizer & Admin use the Organizer toolkit on mobile (Dashboard + Kelola Event + Scanner + Profil)
     // Admin management (User roles, stats, config) is strictly handled in React Web
     if (lower == 'organizer' || lower == 'panitia' || lower == 'admin') {
       return const [
-        ShellNavigationItem(label: 'Beranda', icon: LucideIcons.compass, route: '/home'),
-        ShellNavigationItem(label: 'Event Saya', icon: LucideIcons.calendarCheck, route: '/organizer/my-events'),
-        ShellNavigationItem(label: 'Scanner', icon: LucideIcons.scanLine, route: '/scanner'),
-        ShellNavigationItem(label: 'Tiket Saya', icon: LucideIcons.ticket, route: '/tickets'),
+        ShellNavigationItem(label: 'Dashboard', icon: LucideIcons.layoutDashboard, route: '/organizer/dashboard'),
+        ShellNavigationItem(label: 'Kelola Event', icon: LucideIcons.calendar, route: '/organizer/my-events'),
+        ShellNavigationItem(label: 'Scanner', icon: LucideIcons.qrCode, route: '/scanner'),
         ShellNavigationItem(label: 'Profil', icon: LucideIcons.user, route: '/profile'),
       ];
     }
