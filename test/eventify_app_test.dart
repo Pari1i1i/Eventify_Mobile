@@ -117,7 +117,7 @@ void main() {
       expect(merged.simulationKey, 'https://api.sandbox.midtrans.com/v2/qris/2b8f8b8c-xxxx-xxxx/qr-code');
     });
 
-    test('TicketModel parsing', () {
+    test('TicketModel parsing and D-DAY expiration', () {
       final json = {
         'id': 101,
         'code': 'EVT-RUN-001',
@@ -129,7 +129,36 @@ void main() {
       final ticket = TicketModel.fromJson(json);
       expect(ticket.ticketCode, 'EVT-RUN-001');
       expect(ticket.isValid, true);
+      expect(ticket.isExpired, false);
       expect(ticket.attendeeName, 'Ahmad Fauzi');
+
+      // Ticket with past D-DAY date must be expired/hangus
+      final pastJson = {
+        'id': 102,
+        'code': 'EVT-RUN-PAST',
+        'order_id': 56,
+        'event_id': 10,
+        'customer_name': 'Ahmad Fauzi',
+        'status': 'valid',
+        'end_at': DateTime.now().subtract(const Duration(days: 2)).toIso8601String(),
+      };
+      final pastTicket = TicketModel.fromJson(pastJson);
+      expect(pastTicket.isExpired, true);
+      expect(pastTicket.isValid, false);
+      expect(pastTicket.isCancelled, true);
+
+      // Ticket with explicit expired status
+      final expiredJson = {
+        'id': 103,
+        'code': 'EVT-EXP',
+        'order_id': 57,
+        'event_id': 10,
+        'customer_name': 'Ahmad Fauzi',
+        'status': 'expired',
+      };
+      final expiredTicket = TicketModel.fromJson(expiredJson);
+      expect(expiredTicket.isExpired, true);
+      expect(expiredTicket.isValid, false);
     });
 
     test('ScanResultModel parsing', () {

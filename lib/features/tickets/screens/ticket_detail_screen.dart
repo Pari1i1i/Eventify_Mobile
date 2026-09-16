@@ -93,7 +93,7 @@ class _TicketDetailView extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: isValid ? AppColors.yellow : Colors.grey.shade300,
+                      color: isValid ? AppColors.yellow : (ticket.isExpired ? const Color(0x50FF4365) : Colors.grey.shade300),
                       border: const Border(bottom: BorderSide(color: AppColors.textBorder, width: 2.5)),
                     ),
                     child: Column(
@@ -119,8 +119,14 @@ class _TicketDetailView extends ConsumerWidget {
                               ),
                             ),
                             NeoBadge(
-                              label: isValid ? 'STATUS: VALID' : (ticket.isUsed ? 'SUDAH SCAN' : 'BATAL'),
-                              backgroundColor: isValid ? AppColors.mint : (ticket.isUsed ? AppColors.orange : AppColors.pink),
+                              label: isValid
+                                  ? 'STATUS: VALID'
+                                  : (ticket.isUsed
+                                      ? 'SUDAH SCAN'
+                                      : (ticket.isExpired ? 'STATUS: HANGUS' : 'STATUS: BATAL')),
+                              backgroundColor: isValid
+                                  ? AppColors.mint
+                                  : (ticket.isUsed ? AppColors.orange : AppColors.pink),
                               textColor: AppColors.textBorder,
                               hasBorder: true,
                             ),
@@ -190,12 +196,18 @@ class _TicketDetailView extends ConsumerWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Tunjukkan QR ini kepada petugas di pintu masuk / gate event',
+                          isValid
+                              ? 'Tunjukkan QR ini kepada petugas di pintu masuk / gate event'
+                              : (ticket.isExpired
+                                  ? 'Tiket ini telah hangus karena event telah selesai (melewati D-DAY)'
+                                  : (ticket.isUsed
+                                      ? 'Tiket ini telah berhasil digunakan untuk check-in'
+                                      : 'Tiket tidak dapat digunakan')),
                           textAlign: TextAlign.center,
                           style: GoogleFonts.plusJakartaSans(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: AppColors.textSecondary,
+                            color: ticket.isExpired ? AppColors.pink : AppColors.textSecondary,
                           ),
                         ),
                       ],

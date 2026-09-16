@@ -10,10 +10,11 @@ class TicketModel {
   final String? venueName;
   final String? venueAddress;
   final DateTime? eventDate;
+  final DateTime? endDate;
   final String attendeeName;
   final String? attendeeEmail;
   final String? attendeePhone;
-  final String status; // 'valid', 'used', 'cancelled'
+  final String status; // 'valid', 'used', 'cancelled', 'expired'
   final DateTime? checkedInAt;
   final DateTime? createdAt;
 
@@ -29,6 +30,7 @@ class TicketModel {
     this.venueName,
     this.venueAddress,
     this.eventDate,
+    this.endDate,
     required this.attendeeName,
     this.attendeeEmail,
     this.attendeePhone,
@@ -37,13 +39,38 @@ class TicketModel {
     this.createdAt,
   });
 
+  bool get isExpired {
+    if (status.toLowerCase() == 'expired' || status.toLowerCase() == 'hangus') {
+      return true;
+    }
+    final target = endDate ?? eventDate;
+    if (target == null) return false;
+
+    final now = DateTime.now();
+    // Jika target memiliki jam spesifik (bukan 00:00:00), bandingkan langsung
+    if (target.hour != 0 || target.minute != 0) {
+      return now.isAfter(target);
+    }
+    // Jika hanya tanggal (00:00:00), batas D-DAY adalah akhir hari tersebut (23:59:59)
+    final endOfDDay = DateTime(
+      target.year,
+      target.month,
+      target.day,
+      23,
+      59,
+      59,
+    );
+    return now.isAfter(endOfDDay);
+  }
+
   bool get isValid =>
       (status.toLowerCase() == 'valid' ||
        status.toLowerCase() == 'active' ||
        status.toLowerCase() == 'unused' ||
        status.toLowerCase() == 'pending') &&
       !isUsed &&
-      !isCancelled;
+      !isCancelled &&
+      !isExpired;
 
   bool get isUsed =>
       status.toLowerCase() == 'used' ||
@@ -55,7 +82,8 @@ class TicketModel {
       status.toLowerCase() == 'cancelled' ||
       status.toLowerCase() == 'cancel' ||
       status.toLowerCase() == 'void' ||
-      status.toLowerCase() == 'expired';
+      status.toLowerCase() == 'expired' ||
+      isExpired;
 
   factory TicketModel.fromJson(Map<String, dynamic> json) {
     final eventObj = json['event'] is Map<String, dynamic> 
@@ -126,6 +154,14 @@ class TicketModel {
 
     final eventDate = rawDate != null ? DateTime.tryParse(rawDate.toString()) : null;
 
+    final rawEndDate = json['end_at'] ??
+        json['end_time'] ??
+        json['event_end_at'] ??
+        json['event_end_time'] ??
+        eventObj?['end_at'] ??
+        eventObj?['end_time'];
+    final endDate = rawEndDate != null ? DateTime.tryParse(rawEndDate.toString()) : null;
+
     final eventId = json['event_id'] is int 
         ? json['event_id'] 
         : int.tryParse(json['event_id']?.toString() ?? eventObj?['id']?.toString() ?? '0') ?? 0;
@@ -153,6 +189,7 @@ class TicketModel {
       venueName: venueName,
       venueAddress: venueAddress,
       eventDate: eventDate,
+      endDate: endDate,
       attendeeName: attendeeName,
       attendeeEmail: json['attendee_email']?.toString() ?? json['customer_email']?.toString(),
       attendeePhone: json['attendee_phone']?.toString(),
@@ -178,11 +215,15 @@ class TicketModel {
       'venue_name': venueName,
       'venue_address': venueAddress,
       'event_date': eventDate?.toIso8601String(),
+      'start_at': eventDate?.toIso8601String(),
+      'end_date': endDate?.toIso8601String(),
+      'end_at': endDate?.toIso8601String(),
       'customer_name': attendeeName,
       'attendee_name': attendeeName,
       'attendee_email': attendeeEmail,
       'attendee_phone': attendeePhone,
       'status': status,
+      'is_expired': isExpired,
       'checked_in_at': checkedInAt?.toIso8601String(),
       'created_at': createdAt?.toIso8601String(),
     };

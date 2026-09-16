@@ -66,7 +66,7 @@ class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isValid ? AppColors.yellow : Colors.grey.shade200,
+                  color: isValid ? AppColors.yellow : (ticket.isExpired ? const Color(0x40FF4365) : Colors.grey.shade200),
                   border: const Border(bottom: BorderSide(color: AppColors.textBorder, width: 2)),
                 ),
                 child: Row(
@@ -90,12 +90,14 @@ class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
                     NeoBadge(
                       label: ticket.isUsed
                           ? 'SUDAH SCAN'
-                          : (ticket.isCancelled
-                              ? 'BATAL'
-                              : (isValid ? 'VALID' : ticket.status.toUpperCase())),
+                          : (ticket.isExpired
+                              ? 'HANGUS'
+                              : (ticket.isCancelled
+                                  ? 'BATAL'
+                                  : (isValid ? 'VALID' : ticket.status.toUpperCase()))),
                       backgroundColor: ticket.isUsed
                           ? AppColors.orange
-                          : (ticket.isCancelled ? AppColors.pink : AppColors.mint),
+                          : (ticket.isExpired || ticket.isCancelled ? AppColors.pink : AppColors.mint),
                       textColor: AppColors.textBorder,
                       hasBorder: true,
                     ),
@@ -176,9 +178,9 @@ class _MyTicketsScreenState extends ConsumerState<MyTicketsScreen>
                           ],
                         ),
                         NeoButton(
-                          text: 'BUKA QR',
-                          icon: LucideIcons.qrCode,
-                          backgroundColor: isValid ? AppColors.mint : AppColors.yellow,
+                          text: isValid ? 'BUKA QR' : (ticket.isExpired ? 'HANGUS' : 'DETAIL'),
+                          icon: isValid ? LucideIcons.qrCode : LucideIcons.fileText,
+                          backgroundColor: isValid ? AppColors.mint : (ticket.isExpired ? AppColors.pink : AppColors.yellow),
                           height: 32,
                           fontSize: 10,
                           fullWidth: false,
