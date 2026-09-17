@@ -67,7 +67,7 @@ Setiap fitur mengikuti struktur: `models/`, `providers/`, `screens/`, `services/
    Edit `lib/core/constants/api_constants.dart`:
 
    ```dart
-   static const String defaultBaseUrl = 'https://photographic-more-clearly-essays.trycloudflare.com/api/v1';
+   static const String defaultBaseUrl = 'https://<DOMAIN_ATAU_TUNNEL_URL>/api/v1';
    ```
 
    Aplikasi juga menyimpan base URL custom di `SharedPreferences` (key `eventify_custom_base_url`) — bisa diubah dari pengaturan aplikasi tanpa rebuild.
