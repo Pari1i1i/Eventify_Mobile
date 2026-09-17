@@ -1,6 +1,6 @@
 class ApiConstants {
   // Default Base URL for deployed API server
-  static const String defaultBaseUrl = 'https://photograph-revision-tell-lynn.trycloudflare.com/api/v1';
+  static const String defaultBaseUrl = 'https://photographic-more-clearly-essays.trycloudflare.com/api/v1';
 
   // Active Base URL (stored in SharedPreferences if custom)
   static String baseUrl = defaultBaseUrl;

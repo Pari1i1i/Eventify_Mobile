@@ -355,13 +355,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     backgroundColor: AppColors.pink,
                     onPressed: () => context.push('/login'),
                   ),
-                  const SizedBox(height: 10),
-                  NeoOutlineButton(
-                    text: 'PENGATURAN SERVER API',
-                    icon: LucideIcons.settings,
-                    fullWidth: true,
-                    onPressed: _showServerSettingsModal,
-                  ),
                 ],
               ),
             ),
